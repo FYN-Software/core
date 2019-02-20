@@ -337,6 +337,20 @@ if(typeof HTMLElement != 'undefined')
                 return this.parentNode.removeChild(this);
             },
         },
+        path: {
+            get()
+            {
+                let path = [];
+                let el = this.parentNode;
+
+                while(el instanceof HTMLElement)
+                {
+                    path.push(el);
+
+                    el = el.parentNode;
+                }
+            },
+        },
     });
 
     Object.defineProperties(HTMLFormElement.prototype, {

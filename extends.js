@@ -125,7 +125,7 @@ Object.defineProperties(Math, {
     },
 });
 
-if(EventTarget !== undefined)
+if(typeof EventTarget !== 'undefined')
 {
     Object.defineProperties(EventTarget.prototype, {
         trigger: {

@@ -1,0 +1,20 @@
+{
+    "name": "@fyn-software/core",
+    "description": "FYN Core",
+    "version": "0.0.1",
+    "main": "extends.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/FYN-Software/core"
+    },
+    "keywords": [],
+    "author": "Chris Kruining",
+    "license": "BSD",
+    "bugs": {
+        "url": "https://github.com/FYN-Software/core/issues"
+    },
+    "homepage": "https://github.com/FYN-Software/core",
+    "publishConfig": {
+        "access": "public"
+    }
+}

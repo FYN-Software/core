@@ -145,9 +145,16 @@ if(EventTarget !== undefined)
             }
         },
         on: {
-            value(settings)
+            value(selector, settings = null)
             {
-                Event.on(this, settings);
+                if(settings === null)
+                {
+                    Event.on(this, selector);
+                }
+                else
+                {
+                    Event.delegate(this, selector, settings);
+                }
 
                 return this;
             }

@@ -186,7 +186,7 @@ if(typeof DOMTokenList != 'undefined')
             },
         },
         setOnAssert: {
-            value(condition, name, alt = null)
+            value(condition, name, ...alt)
             {
                 if(condition)
                 {
@@ -194,7 +194,7 @@ if(typeof DOMTokenList != 'undefined')
 
                     if(alt !== null)
                     {
-                        this.remove(...Array.isArray(alt) ? alt : [ alt ]);
+                        this.remove(...alt);
                     }
                 }
                 else
@@ -203,7 +203,7 @@ if(typeof DOMTokenList != 'undefined')
 
                     if(alt !== null)
                     {
-                        this.add(...Array.isArray(alt) ? alt : [ alt ]);
+                        this.add(...alt);
                     }
                 }
 

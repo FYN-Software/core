@@ -78,21 +78,21 @@ Object.defineProperties(Array.prototype, {
     },
     first: {
         enumerable: false,
-        get: function()
+        get()
         {
             return this[0];
         },
     },
     last: {
         enumerable: false,
-        get: function()
+        get()
         {
             return this[this.length - 1];
         },
     },
     sum: {
         enumerable: false,
-        get: function()
+        get()
         {
             return this.reduce((t, v) => t + v, 0);
         },

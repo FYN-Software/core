@@ -51,13 +51,16 @@ export default class Event
             ...options,
         };
 
-        for(let [ event, callback ] of Object.entries(events))
+        for(let [keys, callback] of Object.entries(events))
         {
-            target.addEventListener(
-                event,
-                callback.bind(target),
-                options
-            );
+            for(let event of keys.split(/\|/g))
+            {
+                target.addEventListener(
+                    event,
+                    e => callback.apply(target, [ e, target ]),
+                    options
+                );
+            }
         }
     }
 
@@ -72,14 +75,14 @@ export default class Event
 
             settings[e] = e =>
             {
-                let t = Array.from(target.querySelectorAll(selector)).find(el => e.path.includes(el));
+                const t = Array.from(target.querySelectorAll(selector)).find(el => e.path.includes(el));
 
                 if(t === undefined)
                 {
                     return;
                 }
 
-                c.apply(t, [ e ]);
+                c.apply(t, [ e, t ]);
             };
         }
 

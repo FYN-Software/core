@@ -97,6 +97,59 @@ Object.defineProperties(Array.prototype, {
             return this.reduce((t, v) => t + v, 0);
         },
     },
+    indexOfMinValue: {
+        enumerable: false,
+        get()
+        {
+            let value = Infinity;
+            let index = -1;
+
+            for(const [ i, v ] of this.entries())
+            {
+                if(v < value)
+                {
+                    value = v;
+                    index = i;
+                }
+            }
+
+            return index;
+        },
+    },
+    indexOfMaxValue: {
+        enumerable: false,
+        get()
+        {
+            let value = -Infinity;
+            let index = -1;
+
+            for(const [ i, v ] of this.entries())
+            {
+                if(v > value)
+                {
+                    value = v;
+                    index = i;
+                }
+            }
+
+            return index;
+        },
+    },
+    chunk: {
+        enumerable: false,
+        value(size)
+        {
+            let out = [];
+            const chunks = Math.ceil(this.length / size);
+
+            for(let c = 0; c < chunks; c++)
+            {
+                out.push(this.slice(c * size, Math.min(this.length, (c + 1) * size)));
+            }
+
+            return out;
+        },
+    },
 });
 Object.defineProperties(Array, {
     compare: {
@@ -337,20 +390,6 @@ if(typeof HTMLElement != 'undefined')
                 return this.parentNode.removeChild(this);
             },
         },
-        path: {
-            get()
-            {
-                let path = [];
-                let el = this.parentNode;
-
-                while(el instanceof HTMLElement)
-                {
-                    path.push(el);
-
-                    el = el.parentNode;
-                }
-            },
-        },
     });
 
     Object.defineProperties(HTMLFormElement.prototype, {
@@ -446,6 +485,38 @@ if(typeof Node != 'undefined')
                 }
 
                 return false;
+            },
+        },
+        findUpstream: {
+            value(cb)
+            {
+                for(const p of this.path)
+                {
+                    const res = cb(p);
+
+                    if(res)
+                    {
+                        return res;
+                    }
+                }
+
+                return undefined;
+            },
+        },
+        path: {
+            get()
+            {
+                let path = [];
+                let el = this.parentNode;
+
+                while(el instanceof Node)
+                {
+                    path.push(el);
+
+                    el = el.parentNode;
+                }
+
+                return path;
             },
         },
     });

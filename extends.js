@@ -733,6 +733,11 @@ export function equals(a, b)
             return false;
         }
 
+        if(Object.getOwnPropertyNames(a).compare(Object.getOwnPropertyNames(b)) === false)
+        {
+            return false;
+        }
+
         for(const p of Object.getOwnPropertyNames(a))
         {
             if(equals(a[p], b[p]) !== true)

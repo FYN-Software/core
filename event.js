@@ -73,9 +73,8 @@ export default class Event
                 continue;
             }
 
-            settings[e] = e =>
-            {
-                const t = Array.from(target.querySelectorAll(selector)).find(el => e.path.includes(el));
+            settings[e] = e => {
+                const t = Array.from(target.querySelectorAll(selector)).find(el => e.composedPath().includes(el));
 
                 if(t === undefined)
                 {

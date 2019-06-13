@@ -317,6 +317,8 @@ if(typeof NamedNodeMap != 'undefined')
 
 if(typeof HTMLElement != 'undefined')
 {
+    const originalRemove = HTMLElement.prototype.remove;
+
     Object.defineProperties(HTMLElement.prototype, {
         getInnerClientRect: {
             value()
@@ -389,6 +391,13 @@ if(typeof HTMLElement != 'undefined')
 
                 return this.parentNode.removeChild(this);
             },
+        },
+        remove: {
+            value()
+            {
+                Event.dispose(this);
+                originalRemove.call(this);
+            }
         },
     });
 

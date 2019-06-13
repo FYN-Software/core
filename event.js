@@ -1,3 +1,5 @@
+const eventMap = new WeakMap();
+
 export default class Event
 {
     static debounce(delay, callback)
@@ -47,17 +49,42 @@ export default class Event
         let { options = {}, ...events } = settings;
 
         options = {
-            ...{ capture: false, passive: false },
+            ...{ capture: false, passive: false, details: false },
             ...options,
         };
 
-        for(let [keys, callback] of Object.entries(events))
+        for(const [keys, callback] of Object.entries(events))
         {
-            for(let event of keys.split(/\|/g))
+            for(const event of keys.split(/\|/g))
             {
+                if(eventMap.has(target))
+                {
+                    const listeners = eventMap.get(target);
+
+                    if(listeners.has(event) === false)
+                    {
+                        listeners.set(event, new Set());
+                    }
+
+                    eventMap.get(target).get(event).add(callback);
+                }
+                else
+                {
+                    eventMap.set(target, new Map([ [event, new Set([ callback ])] ]));
+                }
+
                 target.addEventListener(
                     event,
-                    e => callback.apply(target, [ e, target ]),
+                    e => {
+                        if(options.details === true)
+                        {
+                            callback(e.detail, e, target);
+                        }
+                        else
+                        {
+                            callback.call(target, e, target)
+                        }
+                    },
                     options
                 );
             }
@@ -81,7 +108,7 @@ export default class Event
                     return;
                 }
 
-                c.apply(t, [ e, t ]);
+                c.call(t, e, t);
             };
         }
 
@@ -94,5 +121,47 @@ export default class Event
         event.initEvent(name, false, true);
 
         target.dispatchEvent(event);
+    }
+
+    static dispose(target)
+    {
+        const events = eventMap.get(target) || new Map();
+
+        for(const [ event, listeners ] of events)
+        {
+            for(const listener of listeners)
+            {
+                target.removeEventListener(event, listener);
+
+                listeners.delete(listener);
+            }
+
+            events.delete(event);
+        }
+
+        for(const child of target.children)
+        {
+            this.dispose(child);
+        }
+    }
+
+    static async await(target, event)
+    {
+        if(event.includes('|'))
+        {
+            const events = event.split('|');
+
+            throw new Error(`Can only await one event got [${events.length}](${events.join(', ')})`);
+        }
+
+        return new Promise(r => {
+            target.on({
+                options: {
+                    once: true,
+                    details: true,
+                },
+                [event]: d => r(d),
+            });
+        });
     }
 }

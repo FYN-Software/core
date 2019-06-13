@@ -224,6 +224,19 @@ if(typeof EventTarget !== 'undefined')
                 return this;
             }
         },
+        await: {
+            async value(event, selector = ':scope')
+            {
+                return new Promise(r => {
+                    this.on(selector, {
+                        options: {
+                            once: true,
+                        },
+                        [event]: e => r(e),
+                    });
+                });
+            },
+        },
     });
 }
 

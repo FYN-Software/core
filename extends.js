@@ -462,7 +462,10 @@ if(typeof NodeList != 'undefined')
         clear: {
             value()
             {
-                Array.from(this).forEach(e => e.remove());
+                Array.from(this).forEach(e => {
+                    e.remove();
+                    e = undefined;
+                });
 
                 return this;
             },

@@ -147,21 +147,14 @@ export default class Event
 
     static async await(target, event)
     {
-        if(event.includes('|'))
-        {
-            const events = event.split('|');
-
-            throw new Error(`Can only await one event got [${events.length}](${events.join(', ')})`);
-        }
-
-        return new Promise(r => {
+        return Promise.race(event.split('|').map(e => new Promise(r => {
             target.on({
                 options: {
                     once: true,
                     details: true,
                 },
-                [event]: d => r(d),
-            });
-        });
+                [e]: d => r(d),
+            })
+        })));
     }
 }

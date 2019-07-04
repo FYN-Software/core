@@ -257,20 +257,12 @@ if(typeof DOMTokenList != 'undefined')
                 if(condition)
                 {
                     this.add(name);
-
-                    if(alt !== null)
-                    {
-                        this.remove(...alt);
-                    }
+                    this.remove(...alt);
                 }
                 else
                 {
                     this.remove(name);
-
-                    if(alt !== null)
-                    {
-                        this.add(...alt);
-                    }
+                    this.add(...alt);
                 }
 
                 return this;

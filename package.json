@@ -13,7 +13,7 @@
     "bugs": {
         "url": "https://github.com/FYN-Software/core/issues"
     },
-    "homepage": "https://github.com/FYN-Software/core",
+    "homepage": "https://fyn-software.github.io",
     "publishConfig": {
         "access": "public"
     }

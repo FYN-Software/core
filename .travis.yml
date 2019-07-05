@@ -1,0 +1,13 @@
+notifications:
+  email: false
+  
+language: node_js
+node_js: node
+
+deploy:
+  provider: npm
+  email: "chris@cgames.nl"
+  api_key: "b/vzzKEGCZSJ5nQPc1n7u0ldHZ0VXpBcLUuQ7reDNjN2hrHNEKkEyLdDd9KUaGNMd85jZUm7mJugWg/vtyy6Q/3okZ6V7A7cDAzhE1EEjdL4EsI3Tx+gRawNWDY1tDgpCHEriGuKpjZngbZ1jZuuDcYVWRVHCXPifMQTiO/9m86jXKbisCZ00sK/Kuj/7cZSYFCVQ+mSNHy7ZRIWhMXCfiLrkPVej+14U0WzfDJqkOEpouYJ4DNOi9klBGn9V6Os2k9pOhzyzqEpR2alz0aGT27QhbNUtbUdJsWtBW0P5ZKobf5k8Tvhn18o8xni4zoEHSR5976WKU3MknxoYJ0NeGvcDqLD1j6S9vFpHdVNlyqCTuYiaZLZUUlKyONm/UWrpeebDz0eMR3znfYDtXu8Haz+LtzDUq+WkUihreb6S3FrJh1B+4J4Hm2rC99DMZa6bvzlBuvlnCOxTE1X1mwoB4T6hzGBw/Q87A63WARm1z5RoPP7L/PnGF3oW6V8nuM1SX3qhqdmE/zY9dh2F1da3TGb+6DVDCNnVhgIgaIa1KLM+pPJNNlZLwYVDbxPZG8/KImVuxeMu5MFXozwwSNHvBYtIbUtiOGTYkQD4QIw0tbSTWmHAd6hh89b9nTpjUoGbv1W1MSK7oHLizR+FaUUjF6Qgj6xv5zzlBKNvI7xCUQ="
+  on:
+    tags: true
+    branch: master

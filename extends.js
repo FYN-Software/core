@@ -701,7 +701,7 @@ export function clone(obj, root = null)
         }, []);
     }
 
-    // Handle Array
+    // Handle Set
     if(obj instanceof Set)
     {
         return new Set(Array.from(obj).map(v => clone(v)));
@@ -724,8 +724,19 @@ export function clone(obj, root = null)
     throw new Error('Unable to copy obj! Its type isn\'t supported.');
 }
 
-export function equals(a, b)
+export function equals(a, b, references = new WeakSet())
 {
+    // NOTE(Chris Kruining) This is an attempt to catch cyclic references
+    if(typeof a === 'object' && a !== undefined && a !== null)
+    {
+        if (references.has(a))
+        {
+            return true;
+        }
+
+        references.add(a);
+    }
+
     if(typeof a !== typeof b)
     {
         return false;
@@ -757,7 +768,7 @@ export function equals(a, b)
 
         for(const p of Object.getOwnPropertyNames(a))
         {
-            if(equals(a[p], b[p]) !== true)
+            if(equals(a[p], b[p], references) !== true)
             {
                 return false;
             }

@@ -225,16 +225,9 @@ if(typeof EventTarget !== 'undefined')
             }
         },
         await: {
-            async value(event, selector = ':scope')
+            async value(event)
             {
-                return new Promise(r => {
-                    this.on(selector, {
-                        options: {
-                            once: true,
-                        },
-                        [event]: e => r(e),
-                    });
-                });
+                return Event.await(this, event);
             },
         },
     });
@@ -777,7 +770,7 @@ export function equals(a, b, references = new WeakSet())
         return true;
     }
 
-    throw new Error(`Unable to compare ${a} and ${b}! Its type isn't supported.`);
+    return a === b;
 }
 
 export function objectFromEntries(arr)

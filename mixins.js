@@ -114,7 +114,7 @@ export const abstract = C => class extends C
     {
         if(new.target === C)
         {
-            throw new Error('Class is abstract, needs an concrete implementation to function properly');
+            throw new Error(`'${C.name}' is abstract, needs an concrete implementation to function properly`);
         }
 
         super();

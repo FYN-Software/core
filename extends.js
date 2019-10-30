@@ -159,6 +159,20 @@ Object.defineProperties(Array, {
         },
         enumerable: false
     },
+    fromAsync: {
+        async value(iterator)
+        {
+            const result = [];
+
+            for await (const item of iterator)
+            {
+                result.push(item);
+            }
+
+            return result;
+        },
+        enumerable: false
+    },
 });
 
 Object.defineProperties(Math, {
@@ -347,9 +361,11 @@ if(typeof HTMLElement != 'undefined')
             },
         },
         index: {
-            value()
+            get()
             {
-                return Array.from(this.parentNode.children).indexOf(this);
+                return this.hasAttribute('index')
+                    ? Number.parseInt(this.getAttribute('index'))
+                    : Array.from(this.parentNode.children).indexOf(this);
             },
         },
         cloneStyle: {
@@ -644,6 +660,17 @@ if(typeof DocumentFragment != 'undefined')
 
                 return temp.content;
             },
+        },
+    });
+    Object.defineProperties(DocumentFragment.prototype, {
+        innerHTML: {
+            get()
+            {
+                const div = document.createElement('div');
+                div.appendChild(this.cloneNode(true));
+
+                return div.innerHTML;
+            }
         },
     });
 }

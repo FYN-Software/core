@@ -2,6 +2,8 @@ const eventMap = new WeakMap();
 
 export default class Event
 {
+    static #listeners = new WeakMap();
+
     static debounce(delay, callback)
     {
         let timeout;
@@ -49,70 +51,60 @@ export default class Event
         let { options = {}, ...events } = settings;
 
         options = {
-            ...{ capture: false, passive: false, details: false },
+            ...{ capture: false, passive: true, details: true, selector: null },
             ...options,
         };
+        const hash = JSON.stringify(options);
+
+        if(this.#listeners.has(target) === false)
+        {
+            this.#listeners.set(target, new Map());
+        }
+
+        if(this.#listeners.get(target).has(hash) === false)
+        {
+            this.#listeners.get(target).set(hash, new Map());
+        }
+
+        const listeners = this.#listeners.get(target).get(hash);
 
         for(const [keys, callback] of Object.entries(events))
         {
             for(const event of keys.split(/\|/g))
             {
-                if(eventMap.has(target))
+                if(listeners.has(event) === false)
                 {
-                    const listeners = eventMap.get(target);
+                    listeners.set(event, new Set());
 
-                    if(listeners.has(event) === false)
-                    {
-                        listeners.set(event, new Set());
-                    }
+                    target.addEventListener(
+                        event,
+                        e => {
+                            const element = options.selector === null
+                                ? target
+                                : Array.from(target.querySelectorAll(options.selector))
+                                    .find(el => e.composedPath().includes(el));
 
-                    eventMap.get(target).get(event).add(callback);
+                            if(element === undefined)
+                            {
+                                return;
+                            }
+
+                            const value = options.details === true && e instanceof CustomEvent
+                                ? e.detail
+                                : e;
+
+                            for(const callback of this.#listeners.get(target).get(hash).get(e.type))
+                            {
+                                callback(value, element, e);
+                            }
+                        },
+                        options
+                    );
                 }
-                else
-                {
-                    eventMap.set(target, new Map([ [event, new Set([ callback ])] ]));
-                }
 
-                target.addEventListener(
-                    event,
-                    e => {
-                        if(options.details === true)
-                        {
-                            callback(e.detail, e, target);
-                        }
-                        else
-                        {
-                            callback.call(target, e, target)
-                        }
-                    },
-                    options
-                );
+                this.#listeners.get(target).get(hash).get(event).add(callback);
             }
         }
-    }
-
-    static delegate(target, selector, settings)
-    {
-        for(let [ e, c ] of Object.entries(settings))
-        {
-            if(e === 'options')
-            {
-                continue;
-            }
-
-            settings[e] = e => {
-                const t = Array.from(target.querySelectorAll(selector)).find(el => e.composedPath().includes(el));
-
-                if(t === undefined)
-                {
-                    return;
-                }
-
-                c.call(t, e, t);
-            };
-        }
-
-        Event.on(document.body, settings);
     }
 
     static trigger(target, name)

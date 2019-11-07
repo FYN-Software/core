@@ -203,35 +203,30 @@ if(typeof EventTarget !== 'undefined')
                 return this;
             }
         },
-        delegate: {
-            value(selector, settings)
-            {
-                Event.delegate(this, selector, settings);
-
-                return this;
-            }
-        },
         on: {
             value(selector, settings = null)
             {
-                if(settings === null)
+                if(settings !== null && typeof selector === 'string')
                 {
-                    Event.on(this, selector);
+                    if(settings.hasOwnProperty('options') === false)
+                    {
+                        settings.options = {};
+                    }
+
+                    settings.options.selector = selector;
                 }
-                else
-                {
-                    Event.delegate(this, selector, settings);
-                }
+
+                Event.on(this, settings || selector);
 
                 return this;
             }
         },
         emit: {
-            value(name, data = {}, composed = false)
+            value(name, detail = {}, composed = false)
             {
                 this.dispatchEvent(new CustomEvent(name, {
-                    detail: data,
                     bubbles: true,
+                    detail,
                     composed,
                 }));
 

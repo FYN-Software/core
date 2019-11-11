@@ -3,6 +3,9 @@
     "description": "FYN Core",
     "version": "0.0.1",
     "main": "extends.js",
+    "scripts": {
+        "release": "npm-github-release"
+    },
     "repository": {
         "type": "git",
         "url": "https://github.com/FYN-Software/core"

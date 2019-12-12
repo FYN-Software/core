@@ -1,5 +1,4 @@
 import * as Comlink from 'https://unpkg.com/comlink/dist/esm/comlink.mjs';
-import Store from './store.js';
 
 export default class Idb
 {

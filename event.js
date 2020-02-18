@@ -51,9 +51,12 @@ export default class Event
         let { options = {}, ...events } = settings;
 
         options = {
-            ...{ capture: false, passive: true, details: true, selector: null },
+            ...{ capture: false, passive: true, details: true, selector: null, once: false },
             ...options,
         };
+        const once = options.once;
+        delete options.once;
+
         const hash = JSON.stringify(options);
 
         if(this.#listeners.has(target) === false)
@@ -95,6 +98,11 @@ export default class Event
 
                             for(const callback of this.#listeners.get(target).get(hash).get(e.type))
                             {
+                                if(once)
+                                {
+                                    this.#listeners.get(target).get(hash).get(e.type).delete(callback);
+                                }
+
                                 callback(value, element, e);
                             }
                         },

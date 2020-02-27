@@ -62,7 +62,7 @@ export default class QueuedPromise
 
     async resolve(item, { property, args })
     {
-        let r = item[property];
+        let r = await item[property];
 
         if(typeof r === 'function')
         {

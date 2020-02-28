@@ -644,6 +644,22 @@ if(typeof JSON != 'undefined')
     });
 }
 
+if(typeof Number != 'undefined')
+{
+    Object.defineProperties(Number, {
+        tryParseInt: {
+            value(str)
+            {
+                const int = Number.parseInt(str);
+
+                return Number.isNaN(int)
+                    ? str
+                    : int;
+            },
+        },
+    });
+}
+
 if(typeof DocumentFragment != 'undefined')
 {
     Object.defineProperties(DocumentFragment, {

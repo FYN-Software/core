@@ -2,31 +2,31 @@ const store = Symbol('store');
 
 export default class Queue extends EventTarget
 {
+    #store = [];
+
     constructor()
     {
         super();
-
-        this[store] = [];
     }
 
     enqueue(...items)
     {
-        return this[store].push(...items);
+        return this.#store.push(...items);
     }
 
     dequeue()
     {
-        return this[store].shift();
+        return this.#store.shift();
     }
 
     clear()
     {
-        return this[store].clear();
+        return this.#store.clear();
     }
 
     [Symbol.toStringTag]()
     {
-        return this[store].map((i, k) => `${k} :: ${i}`).join('\n');
+        return this.#store.map((i, k) => `${k} :: ${i}`).join('\n');
     }
 
     *[Symbol.iterator]()
@@ -39,16 +39,16 @@ export default class Queue extends EventTarget
 
     get first()
     {
-        return this[store].first;
+        return this.#store.first;
     }
 
     get last()
     {
-        return this[store].last;
+        return this.#store.last;
     }
 
     get length()
     {
-        return this[store].length;
+        return this.#store.length;
     }
 }

@@ -11,17 +11,25 @@ export default class Queue extends EventTarget
 
     enqueue(...items)
     {
-        return this.#store.push(...items);
+        this.#store.push(...items);
+
+        this.emit('enqueued', items);
     }
 
     dequeue()
     {
-        return this.#store.shift();
+        const item = this.#store.shift();
+
+        this.emit('dequeued', item);
+
+        return item;
     }
 
     clear()
     {
-        return this.#store.clear();
+        this.#store.clear();
+
+        this.emit('cleared');
     }
 
     [Symbol.toStringTag]()

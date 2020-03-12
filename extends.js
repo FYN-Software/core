@@ -175,6 +175,16 @@ Object.defineProperties(Array, {
     },
 });
 
+Object.defineProperties(Function.prototype, {
+    invoke: {
+        value(...args)
+        {
+            return this.apply(null, args);
+        },
+        enumerable: false,
+    },
+});
+
 Object.defineProperties(Math, {
     clamp: {
         value(lower, upper, value)
@@ -666,10 +676,7 @@ if(typeof DocumentFragment != 'undefined')
         fromString: {
             value(str)
             {
-                const temp = document.createElement('template');
-                temp.innerHTML = str;
-
-                return temp.content;
+                return document.createRange().createContextualFragment(str);
             },
         },
     });

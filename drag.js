@@ -1,5 +1,65 @@
 export default class Drag
 {
+    static #marker = DocumentFragment.fromString('<div style="border: 1px solid var(--info-bg);"></div>').children[0];
+    static #allowedToEffect = {
+        all: 'copy',
+        copy: 'copy',
+        move: 'move',
+        none: 'none',
+    };
+    static #placeMarker = (node, x, y) => {
+        const offset = 25;
+        let reference = node.getRootNode().elementFromPoint(x, y);
+        let container;
+        const rect = reference.getBoundingClientRect();
+        const test = new DOMRect(
+            rect.x + offset,
+            rect.y + offset,
+            rect.width - offset * 2,
+            rect.height - offset * 2,
+        );
+
+        if(x >= test.left && x <= test.right && y >= test.top && y <= test.bottom)
+        {
+            container = reference;
+
+            for(const child of reference.children)
+            {
+                const rect = child.getBoundingClientRect();
+
+                if(x < rect.left + rect.width / 2 || y < rect.top + rect.height / 2)
+                {
+                    reference = child;
+
+                    break;
+                }
+
+                reference = container;
+            }
+        }
+        else
+        {
+            container = reference.parentElement;
+            reference = x < test.left || y < test.top
+                ? reference
+                : reference.nextElementSibling ?? container;
+        }
+
+        if(container === Drag.#marker)
+        {
+            return;
+        }
+
+        if(container === reference)
+        {
+            container.appendChild(Drag.#marker);
+        }
+        else
+        {
+            container.insertBefore(Drag.#marker, reference);
+        }
+    };
+
     static draggable(target, scope, config)
     {
         const { query = '*', effect = 'move' } = config;
@@ -57,7 +117,7 @@ export default class Drag
 
                 e.preventDefault();
                 e.stopPropagation();
-                e.dataTransfer.dropEffect = e.dataTransfer.effectAllowed;
+                e.dataTransfer.dropEffect = Drag.#allowedToEffect[e.dataTransfer.effectAllowed];
 
                 if(last.x === e.x && last.y === e.y)
                 {
@@ -69,6 +129,7 @@ export default class Drag
 
                 if(valid)
                 {
+                    Drag.#placeMarker(target, e.x, e.y);
                     config.move?.invoke({ x: e.x, y: e.y });
                 }
             },
@@ -85,23 +146,44 @@ export default class Drag
 
                 config.leave?.invoke(e);
             },
-            drop: e => {
-                const data = e.dataTransfer.types.filter(t => t === scope);
+            drop: async e => {
+                e.preventDefault();
+                e.stopPropagation();
 
-                console.log(data);
+                const promises = [];
 
-                if(data.length > 0)
+                for(const item of e.dataTransfer.items)
                 {
-                    for(const item of e.dataTransfer.items)
+                    if(item.type !== scope && scope !== 'Files')
                     {
-                        if(item.type !== scope)
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        item[`getAs${item.kind.capitalize()}`](r => config.drop?.invoke({ effect: e.dataTransfer.effectAllowed, result: JSON.parse(r), x: e.x, y: e.y, path: e.composedPath() }));
+                    const cb = async r => await config.drop?.invoke({
+                        marker: Drag.#marker,
+                        effect: e.dataTransfer.effectAllowed,
+                        type: item.type,
+                        result: r,
+                        x: e.x,
+                        y: e.y,
+                        path: e.composedPath()
+                    });
+
+                    switch (item.kind)
+                    {
+                        case 'string':
+                            promises.push(new Promise(res => item.getAsString(async r => res(await cb(JSON.parse(r))))));
+                            break;
+
+                        case 'file':
+                            promises.push(cb(item.getAsFile()));
+                            break;
                     }
                 }
+
+                await Promise.all(promises);
+
+                marker.remove();
 
                 e.dataTransfer.clearData();
             },

@@ -693,6 +693,23 @@ if(typeof DocumentFragment != 'undefined')
     });
 }
 
+if(typeof DataTransferItemList != 'undefined')
+{
+    Object.defineProperties(DataTransferItemList.prototype, {
+        [Symbol.iterator]: {
+            *value(x, y)
+            {
+                const c = this.length;
+
+                for(let i = 0; i < c; i++)
+                {
+                    yield this[i];
+                }
+            },
+        },
+    });
+}
+
 if(typeof DOMRect != 'undefined')
 {
     Object.defineProperties(DOMRect.prototype, {

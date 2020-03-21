@@ -183,7 +183,7 @@ export default class Drag
 
                 await Promise.all(promises);
 
-                marker.remove();
+                Drag.#marker.remove();
 
                 e.dataTransfer.clearData();
             },

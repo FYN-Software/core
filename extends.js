@@ -679,6 +679,30 @@ if(typeof DocumentFragment != 'undefined')
                 return document.createRange().createContextualFragment(str);
             },
         },
+        fromTemplate: {
+            value(parts, ...args)
+            {
+                let str = '';
+
+                const c = args.length;
+                for(let i = 0; i < c; i++)
+                {
+                    let arg = args[i];
+                    const part = parts[i];
+
+                    switch (typeof arg)
+                    {
+                        case 'object':
+                            arg = Object.entries(arg).map(([ k, v]) => `${k}="${v}"`).join(' ');
+                            break;
+                    }
+
+                    str += part + arg;
+                }
+
+                return DocumentFragment.fromString(str + parts[c]);
+            }
+        },
     });
     Object.defineProperties(DocumentFragment.prototype, {
         innerHTML: {

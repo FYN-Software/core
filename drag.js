@@ -1,6 +1,7 @@
 export default class Drag
 {
     static #marker = DocumentFragment.fromString('<div style="border: 1px solid var(--info-bg);"></div>').children[0];
+    static #dragged = new Map();
     static #allowedToEffect = {
         all: 'copy',
         copy: 'copy',
@@ -25,10 +26,17 @@ export default class Drag
 
             for(const child of reference.children)
             {
+                if(child === Drag.#marker)
+                {
+                    continue;
+                }
+
                 const rect = child.getBoundingClientRect();
 
-                if(x < rect.left + rect.width / 2 || y < rect.top + rect.height / 2)
-                {
+                if( // NOTE(Chris Kruining) This had 'dead-spots' in the corner regions, maybe we want to fix that?
+                    (x < (rect.left + rect.width / 2) && y >= rect.top && y <= rect.bottom) ||
+                    (y < (rect.top + rect.height / 2) && x >= rect.left && x <= rect.right)
+                ) {
                     reference = child;
 
                     break;
@@ -75,10 +83,16 @@ export default class Drag
                 {
                     e.dataTransfer.effectAllowed = effect;
                     e.dataTransfer.setData(scope, JSON.stringify(value));
+
+                    Drag.#dragged.set(scope, e.target);
                 }
             },
-            dragend: (e, t) => {
+            dragend: async (e, t) => {
                 config.end?.invoke(e, t);
+
+                await Promise.delay(1);
+
+                Drag.#marker.remove();
             },
         });
     }
@@ -148,19 +162,20 @@ export default class Drag
             },
             drop: async e => {
                 e.preventDefault();
-                e.stopPropagation();
+                // e.stopPropagation();
 
                 const promises = [];
 
                 for(const item of e.dataTransfer.items)
                 {
-                    if(item.type !== scope && scope !== 'Files')
+                    if(item.type !== scope && (scope === 'Files' && item.kind === 'file') === false)
                     {
                         continue;
                     }
 
                     const cb = async r => await config.drop?.invoke({
                         marker: Drag.#marker,
+                        dragged: Drag.#dragged.get(scope),
                         effect: e.dataTransfer.effectAllowed,
                         type: item.type,
                         result: r,

@@ -92,7 +92,7 @@ export default class Drag
 
                 await Promise.delay(1);
 
-                Drag.#marker.remove();
+                // Drag.#marker.remove();
             },
         });
     }
@@ -162,7 +162,6 @@ export default class Drag
             },
             drop: async e => {
                 e.preventDefault();
-                // e.stopPropagation();
 
                 const promises = [];
 
@@ -197,6 +196,7 @@ export default class Drag
                 }
 
                 await Promise.all(promises);
+                await Promise.delay(0);
 
                 Drag.#marker.remove();
 

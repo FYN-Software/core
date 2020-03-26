@@ -5,30 +5,23 @@ export default class Style
 
     static get(...keys)
     {
-        return keys.map(key => this.#map.get(key));
+        return keys.map(key => {
+            if(this.#map.has(key) === false)
+            {
+                this.#map.set(key, new CSSStyleSheet());
+            }
+
+            return this.#map.get(key);
+        });
     }
 
     static set(key, url)
     {
-        if(this.#map.has(key))
-        {
-            throw new Error(`Duplicate key error, '${key}' already exists`);
-        }
-
-        const sheet = new CSSStyleSheet();
-        fetch(url).then(r => r.text()).then(r => sheet.replace(r));
-
-        this.#map.set(key, sheet);
-    }
-
-    static override(key, url)
-    {
         if(this.#map.has(key) === false)
         {
-            throw new Error(`Key not found error, '${key}' does not exist`);
+            this.#map.set(key, new CSSStyleSheet());
         }
 
-        const sheet = this.#map.get(key);
-        fetch(url).then(r => r.text()).then(r => sheet.replace(r));
+        fetch(url).then(r => r.text()).then(r => this.#map.get(key).replace(r));
     }
 }

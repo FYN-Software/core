@@ -196,7 +196,7 @@ export default class Drag
                 }
 
                 await Promise.all(promises);
-                await Promise.delay(0);
+                await Promise.delay(10);
 
                 Drag.#marker.remove();
 

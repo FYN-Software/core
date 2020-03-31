@@ -20,6 +20,11 @@ export default class Drag
             rect.height - offset * 2,
         );
 
+        if(reference.childOf(node))
+        {
+            reference = node;
+        }
+
         if(x >= test.left && x <= test.right && y >= test.top && y <= test.bottom)
         {
             container = reference;

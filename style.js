@@ -24,4 +24,14 @@ export default class Style
 
         fetch(url).then(r => r.text()).then(r => this.#map.get(key).replace(r));
     }
+
+    static fromString(key, content)
+    {
+        if(this.#map.has(key) === false)
+        {
+            this.#map.set(key, new CSSStyleSheet());
+        }
+
+        this.#map.get(key).replace(content);
+    }
 }

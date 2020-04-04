@@ -8,28 +8,28 @@ export default class Style
         return keys.map(key => {
             if(this.#map.has(key) === false)
             {
-                this.#map.set(key, new CSSStyleSheet());
+                this.#map.set(key, new CSSStyleSheet({ crossOrigin: 'anonymous' }));
             }
 
             return this.#map.get(key);
         });
     }
 
-    static set(key, url)
+    static set(key, url, options = {})
     {
         if(this.#map.has(key) === false)
         {
-            this.#map.set(key, new CSSStyleSheet());
+            this.#map.set(key, new CSSStyleSheet({ crossOrigin: 'anonymous' }));
         }
 
-        fetch(url).then(r => r.text()).then(r => this.#map.get(key).replace(r));
+        fetch(`${url}?fyn.core.style`, options).then(r => r.text()).then(r => this.#map.get(key).replace(r));
     }
 
     static fromString(key, content)
     {
         if(this.#map.has(key) === false)
         {
-            this.#map.set(key, new CSSStyleSheet());
+            this.#map.set(key, new CSSStyleSheet({ crossOrigin: 'anonymous' }));
         }
 
         this.#map.get(key).replace(content);

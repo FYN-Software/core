@@ -40,16 +40,7 @@ export default class Idb
 
     async transaction(store, mode = 'readwrite')
     {
-        return new Promise(resolve => {
-            const transaction = this.#context.transaction(store, mode);
-
-            resolve(transaction.objectStore(store));
-
-            transaction.oncomplete = () =>
-            {
-                this.#context.close();
-            };
-        });
+        return this.#context.transaction(store, mode).objectStore(store);
     }
 
     async get(name, query)
@@ -106,4 +97,4 @@ export default class Idb
     }
 }
 
-Comlink.expose(Idb);
+// Comlink.expose(Idb);

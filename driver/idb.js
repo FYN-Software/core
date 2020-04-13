@@ -1,4 +1,4 @@
-import * as Comlink from 'https://unpkg.com/comlink/dist/esm/comlink.mjs';
+import * as Comlink from 'https://cdn.jsdelivr.net/npm/comlink@4.2.0/dist/esm/comlink.min.mjs';
 
 export default class Idb
 {

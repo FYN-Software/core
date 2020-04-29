@@ -518,38 +518,6 @@ if(typeof Node != 'undefined')
                 return false;
             },
         },
-        findUpstream: {
-            value(cb)
-            {
-                for(const p of this.path)
-                {
-                    const res = cb(p);
-
-                    if(res)
-                    {
-                        return res;
-                    }
-                }
-
-                return undefined;
-            },
-        },
-        path: {
-            get()
-            {
-                let path = [];
-                let el = this.parentNode;
-
-                while(el instanceof Node)
-                {
-                    path.push(el);
-
-                    el = el.parentNode;
-                }
-
-                return path;
-            },
-        },
     });
 }
 

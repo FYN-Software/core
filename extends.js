@@ -465,6 +465,22 @@ if(typeof HTMLElement != 'undefined')
                 originalRemove.call(this);
             }
         },
+        pathToRoot: {
+            get()
+            {
+                const stack = [ this ];
+                let entry = this;
+
+                while(entry.localName !== 'html')
+                {
+                    entry = entry.parentElement;
+
+                    stack.push(entry);
+                }
+
+                return stack;
+            },
+        },
     });
 
     Object.defineProperties(HTMLFormElement.prototype, {

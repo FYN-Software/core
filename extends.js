@@ -22,6 +22,19 @@ Object.defineProperties(String.prototype, {
         },
         enumerable: false,
     },
+    replaceAllAsync: {
+        async value(regex, callback)
+        {
+            let res = String(this);
+
+            for(const match of res.matchAll(regex))
+            {
+                res = res.replace(match[0], await callback(...match))
+            }
+
+            return res;
+        }
+    },
 });
 
 Object.defineProperties(Array.prototype, {

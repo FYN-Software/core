@@ -32,9 +32,9 @@ export default class Queue extends EventTarget
         this.emit('cleared');
     }
 
-    [Symbol.toStringTag]()
+    get [Symbol.toStringTag]()
     {
-        return this.#store.map((i, k) => `${k} :: ${i}`).join('\n');
+        return `[\n\t${this.#store.map((i, k) => `${k} :: ${JSON.stringify(i)}`).join('\n\t')}\n]`;
     }
 
     *[Symbol.iterator]()

@@ -8,7 +8,7 @@ export default class Drag
         move: 'move',
         none: 'none',
     };
-    static #placeMarker = (node, x, y) => {
+    static #getReference = (node, x, y) => {
         const offset = 25;
         let reference = node.getRootNode().elementFromPoint(x, y);
         let container;
@@ -19,11 +19,6 @@ export default class Drag
             rect.width - offset * 2,
             rect.height - offset * 2,
         );
-
-        if(reference.childOf(node))
-        {
-            reference = node;
-        }
 
         if(x >= test.left && x <= test.right && y >= test.top && y <= test.bottom)
         {
@@ -58,19 +53,13 @@ export default class Drag
                 : reference.nextElementSibling ?? container;
         }
 
-        if(container === Drag.#marker)
-        {
-            return;
-        }
-
-        if(container === reference)
-        {
-            container.appendChild(Drag.#marker);
-        }
-        else
-        {
-            container.insertBefore(Drag.#marker, reference);
-        }
+        return {
+            reference,
+            container,
+            action: container === reference
+                ? 'append'
+                : 'insert',
+        };
     };
 
     static draggable(target, scope, config)
@@ -92,13 +81,15 @@ export default class Drag
                     Drag.#dragged.set(scope, e.target);
                 }
             },
-            dragend: async (e, t) => {
-                config.end?.invoke(e, t);
-
-                await Promise.delay(1);
-
-                // Drag.#marker.remove();
-            },
+            // dragend: async (e, t) => {
+            //     console.log('WHAT?!', config.end)
+            //
+            //     config.end?.invoke(e, t);
+            //
+            //     await Promise.delay(1);
+            //
+            //     // Drag.#marker.remove();
+            // },
         });
     }
 
@@ -148,8 +139,7 @@ export default class Drag
 
                 if(valid)
                 {
-                    Drag.#placeMarker(target, e.x, e.y);
-                    config.move?.invoke({ x: e.x, y: e.y });
+                    config.move?.invoke({ x: e.x, y: e.y, ...Drag.#getReference(target, e.x, e.y) });
                 }
             },
             dragleave: async e => {
@@ -180,6 +170,7 @@ export default class Drag
                     const cb = async r => await config.drop?.invoke({
                         marker: Drag.#marker,
                         dragged: Drag.#dragged.get(scope),
+                        ...Drag.#getReference(target, e.x, e.y),
                         effect: e.dataTransfer.effectAllowed,
                         type: item.type,
                         result: r,
@@ -200,8 +191,13 @@ export default class Drag
                     }
                 }
 
+                // NOTE(Chris Kruining) This might cause a bug where the marker is left behind unwanted, but initial testing shows this is not an issue.
+                if(promises.length === 0)
+                {
+                    return;
+                }
+
                 await Promise.all(promises);
-                await Promise.delay(10);
 
                 Drag.#marker.remove();
 

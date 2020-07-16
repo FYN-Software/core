@@ -38,13 +38,6 @@ Object.defineProperties(String.prototype, {
 });
 
 Object.defineProperties(Array.prototype, {
-    apply: {
-        value(callback, ...args)
-        {
-            return Array.from(this).map(i => callback.apply(i, args));
-        },
-        enumerable: false
-    },
     compare: {
         value(arr2)
         {

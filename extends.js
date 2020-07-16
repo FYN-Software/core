@@ -248,6 +248,57 @@ if(typeof EventTarget !== 'undefined')
     });
 }
 
+if(typeof FormData !== 'undefined')
+{
+    Object.defineProperties(FormData, {
+        from: {
+            value(obj)
+            {
+                const data = new FormData();
+
+                for(const [key, value] of Object.entries(obj))
+                {
+                    data.append(key, value);
+                }
+
+                return data;
+            }
+        },
+    });
+}
+
+if(typeof File !== 'undefined')
+{
+    Object.defineProperties(File.prototype, {
+        toBase64: {
+            async value()
+            {
+                return new Promise((res, rej) => {
+                    const reader = new FileReader();
+
+                    reader.onload = () => res(reader.result);
+                    reader.onerror = e => rej(e);
+
+                    reader.readAsDataURL(this);
+                });
+            }
+        },
+        toBinaryString: {
+            async value()
+            {
+                return new Promise((res, rej) => {
+                    const reader = new FileReader();
+
+                    reader.onload = () => res(reader.result);
+                    reader.onerror = e => rej(e);
+
+                    reader.readAsBinaryString(this);
+                });
+            }
+        },
+    });
+}
+
 if(typeof DOMTokenList != 'undefined')
 {
     Object.defineProperties(DOMTokenList.prototype, {

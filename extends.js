@@ -1,15 +1,5 @@
 import Event from './event.js';
 
-Object.defineProperties(Number, {
-    couldBeNumber: {
-        value(val)
-        {
-            return Number.isNaN(Number.parseInt(val)) !== true;
-        },
-        enumerable: false,
-    },
-});
-
 Object.defineProperties(String.prototype, {
     toDashCase: {
         value()
@@ -226,7 +216,7 @@ if(typeof EventTarget !== 'undefined')
                     settings.options.selector = selector;
                 }
 
-                Event.on(this, settings || selector);
+                Event.on(this, settings ?? selector);
 
                 return this;
             }
@@ -340,28 +330,28 @@ if(typeof HTMLElement != 'undefined')
         getInnerClientRect: {
             value()
             {
-                const style = window.getComputedStyle(this);
+                const style = this.computedStyleMap();
                 const rect = this.getBoundingClientRect();
 
                 return new DOMRect(
                     rect.left,
                     rect.top,
-                    rect.width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
-                    rect.height - parseFloat(style.paddingBottom) - parseFloat(style.paddingTop)
+                    rect.width - style.get('padding-left').value - style.get('padding-right').value,
+                    rect.height - style.get('padding-bottom').value - style.get('padding-top').value,
                 );
             },
         },
         getOuterClientRect: {
             value()
             {
-                const style = window.getComputedStyle(this);
+                const style = this.computedStyleMap();
                 const rect = this.getBoundingClientRect();
 
                 return new DOMRect(
                     rect.left,
                     rect.top,
-                    rect.width + parseFloat(style.marginLeft) + parseFloat(style.marginRight),
-                    rect.height + parseFloat(style.marginBottom) + parseFloat(style.marginTop)
+                    rect.width + style.get('margin-left').value + style.get('margin-right').value,
+                    rect.height + style.get('margin-bottom').value + style.get('margin-top').value,
                 );
             },
         },

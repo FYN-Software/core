@@ -230,13 +230,15 @@ if(typeof EventTarget !== 'undefined')
         emit: {
             value(name, detail = {}, composed = false)
             {
-                this.dispatchEvent(new CustomEvent(name, {
+                const event = new CustomEvent(name, {
                     bubbles: true,
                     detail,
                     composed,
-                }));
+                });
 
-                return this;
+                this.dispatchEvent(event);
+
+                return event;
             }
         },
         await: {
@@ -481,6 +483,14 @@ if(typeof HTMLElement != 'undefined')
                 return stack;
             },
         },
+        wrapWith: {
+            value(el)
+            {
+                this.replaceWith(el);
+
+                el.appendChild(this);
+            },
+        },
     });
 
     Object.defineProperties(HTMLFormElement.prototype, {
@@ -562,6 +572,8 @@ if(typeof HTMLCollection != 'undefined')
 
 if(typeof Node != 'undefined')
 {
+    const origCloneNode = Node.prototype.cloneNode;
+
     Object.defineProperties(Node.prototype, {
         childOf: {
             value(parent)
@@ -579,6 +591,48 @@ if(typeof Node != 'undefined')
                 }
 
                 return false;
+            },
+        },
+        cloneNode: {
+            value(...args)
+            {
+                const clone = origCloneNode.apply(this, args);
+
+                const getIndex = el => Array.from(el.parentNode.children).indexOf(el);
+                const getSelector = (el, root) => {
+                    let selector = '';
+
+                    while (el !== root)
+                    {
+                        selector = ` > :nth-child(${getIndex(el) + 1})${selector}`;
+
+                        el = el.parentElement;
+                    }
+
+                    return `:scope${selector}`;
+                };
+
+                const iterator = (tree, root = tree) => {
+                    for(const node of tree.children)
+                    {
+                        iterator(node, root);
+
+                        if(node.nodeType === 1 && customElements.get(node.localName) !== undefined)
+                        {
+                            for(const [ k, v ] of Object.entries(this.querySelector(getSelector(node, root)).properties.$.props))
+                            {
+                                node[k] = v[Symbol.toPrimitive]('clone');
+                            }
+                        }
+                    }
+                };
+
+                if(this.nodeType === 1)
+                {
+                    iterator(clone);
+                }
+
+                return clone;
             },
         },
     });

@@ -1,7 +1,7 @@
 export default class Style
 {
     static #map = new Map();
-    static #resolvers = new Map();
+    static #urls = new Map();
 
     static get(...keys)
     {
@@ -17,19 +17,17 @@ export default class Style
 
     static async set(key, url, options = {})
     {
+        if(this.#urls.get(key) === url)
+        {
+            return;
+        }
+
+        this.#urls.set(key, url);
+
         const [ sheet ] = this.get(key);
         const css = await fetch(`${url}?fyn.core.style`, options).then(r => r.text());
 
-        try
-        {
-            await sheet.replace(css);
-        }
-        catch (e)
-        {
-            console.error(sheet, css);
-
-            throw e;
-        }
+        await sheet.replace(css);
     }
 
     static fromString(key, content)

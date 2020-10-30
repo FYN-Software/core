@@ -578,7 +578,7 @@ if(typeof Node != 'undefined')
         childOf: {
             value(parent)
             {
-                let el = this.parentNode;
+                let el = this.ownerElement ?? this.parentNode;
 
                 while(el !== null)
                 {

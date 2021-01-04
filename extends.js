@@ -8,10 +8,17 @@ Object.defineProperties(String.prototype, {
         },
         enumerable: false,
     },
+    toSnakeCase: {
+        value()
+        {
+            return this.replace(/([A-Z])/g, (w, u) => `_${ u.toLowerCase() }`).replace(/^_+|_+$/g, '');
+        },
+        enumerable: false,
+    },
     toCamelCase: {
         value()
         {
-            return this.replace(/-([a-z])/g, (w, m) => m.toUpperCase());
+            return this.replace(/[\-_]([a-z])/g, (w, m) => m.toUpperCase());
         },
         enumerable: false,
     },

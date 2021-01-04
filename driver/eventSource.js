@@ -30,9 +30,7 @@ export default class EventSource extends EventTarget
 
             if(e === 'close')
             {
-                await this.#close();
-
-                return;
+                break;
             }
 
             if(e === event)
@@ -65,27 +63,32 @@ export default class EventSource extends EventTarget
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
 
-        while(true)
+        try
         {
-            const { done, value } = await reader.read();
-
-            if(done)
+            while(true)
             {
-                await this.#close()
+                const { done, value } = await reader.read();
 
-                break;
+                if(done)
+                {
+                    break;
+                }
+
+                yield* decoder
+                    .decode(value, {stream: true})
+                    // these 2 functions are synchronous,
+                    // I believe I could still squeeze a
+                    // bit more performance here, if needed
+                    .split('\n\n')
+                    .filter(m => m.length > 0);
             }
-
-            yield* decoder
-                .decode(value, {stream: true})
-                // these 2 functions are synchronous,
-                // I believe I could still squeeze a
-                // bit more performance here, if needed
-                .split('\n\n')
-                .filter(m => m.length > 0);
         }
+        finally
+        {
+            reader.releaseLock();
 
-        reader.releaseLock();
+            await this.#close()
+        }
     }
 
     async *#parse(iterator)

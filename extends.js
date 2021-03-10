@@ -1,3 +1,4 @@
+import {AsyncFunction} from '../component/template.js';
 import Event from './event.js';
 
 Object.defineProperties(String.prototype, {
@@ -153,6 +154,13 @@ Object.defineProperties(Array.prototype, {
             return out;
         },
     },
+    filterAsync: {
+        enumerable: false,
+        async value(predicate)
+        {
+            return this.reduce(async (memo, e) => await predicate(e) ? [...await memo, e] : memo, []);
+        },
+    }
 });
 Object.defineProperties(Array, {
     compare: {
@@ -308,7 +316,7 @@ if(typeof File !== 'undefined')
     });
 }
 
-if(typeof DOMTokenList != 'undefined')
+if(typeof DOMTokenList !== 'undefined')
 {
     Object.defineProperties(DOMTokenList.prototype, {
         toggle: {
@@ -339,7 +347,7 @@ if(typeof DOMTokenList != 'undefined')
     });
 }
 
-if(typeof NamedNodeMap != 'undefined')
+if(typeof NamedNodeMap !== 'undefined')
 {
     Object.defineProperties(NamedNodeMap.prototype, {
         toggle: {
@@ -388,7 +396,7 @@ if(typeof NamedNodeMap != 'undefined')
     });
 }
 
-if(typeof HTMLElement != 'undefined')
+if(typeof HTMLElement !== 'undefined')
 {
     const originalRemove = HTMLElement.prototype.remove;
 
@@ -513,7 +521,7 @@ if(typeof HTMLElement != 'undefined')
     });
 }
 
-if(typeof NodeList != 'undefined')
+if(typeof NodeList !== 'undefined')
 {
     Object.defineProperties(NodeList.prototype, {
         first: {
@@ -562,7 +570,7 @@ if(typeof NodeList != 'undefined')
     });
 }
 
-if(typeof HTMLCollection != 'undefined')
+if(typeof HTMLCollection !== 'undefined')
 {
     Object.defineProperties(HTMLCollection.prototype, {
         on: {
@@ -577,7 +585,7 @@ if(typeof HTMLCollection != 'undefined')
     });
 }
 
-if(typeof Node != 'undefined')
+if(typeof Node !== 'undefined')
 {
     const origCloneNode = Node.prototype.cloneNode;
 
@@ -645,7 +653,7 @@ if(typeof Node != 'undefined')
     });
 }
 
-if(typeof Promise != 'undefined')
+if(typeof Promise !== 'undefined')
 {
     Object.defineProperties(Promise.prototype, {
         stage: {
@@ -677,9 +685,9 @@ if(typeof Promise != 'undefined')
             },
         },
         delay: {
-            value(d)
+            value(milliseconds)
             {
-                return this.then(data => new Promise(r => setTimeout(() => r(data), d)));
+                return this.then(data => new Promise(r => setTimeout(() => r(data), milliseconds)));
             },
         },
     });
@@ -702,15 +710,15 @@ if(typeof Promise != 'undefined')
             },
         },
         delay: {
-            value(d)
+            value(milliseconds)
             {
-                return Promise.resolve(null).delay(d);
+                return Promise.resolve(null).delay(milliseconds);
             },
         },
     });
 }
 
-if(typeof CSSStyleDeclaration != 'undefined')
+if(typeof CSSStyleDeclaration !== 'undefined')
 {
     Object.defineProperties(CSSStyleDeclaration.prototype, {
         toggle: {
@@ -722,7 +730,7 @@ if(typeof CSSStyleDeclaration != 'undefined')
     });
 }
 
-if(typeof JSON != 'undefined')
+if(typeof JSON !== 'undefined')
 {
     Object.defineProperties(JSON, {
         tryParse: {
@@ -746,7 +754,7 @@ if(typeof JSON != 'undefined')
     });
 }
 
-if(typeof Number != 'undefined')
+if(typeof Number !== 'undefined')
 {
     Object.defineProperties(Number, {
         tryParseInt: {
@@ -762,7 +770,7 @@ if(typeof Number != 'undefined')
     });
 }
 
-if(typeof DocumentFragment != 'undefined')
+if(typeof DocumentFragment !== 'undefined')
 {
     Object.defineProperties(DocumentFragment, {
         fromString: {
@@ -809,7 +817,7 @@ if(typeof DocumentFragment != 'undefined')
     });
 }
 
-if(typeof DataTransferItemList != 'undefined')
+if(typeof DataTransferItemList !== 'undefined')
 {
     Object.defineProperties(DataTransferItemList.prototype, {
         [Symbol.iterator]: {
@@ -826,7 +834,7 @@ if(typeof DataTransferItemList != 'undefined')
     });
 }
 
-if(typeof DOMRect != 'undefined')
+if(typeof DOMRect !== 'undefined')
 {
     Object.defineProperties(DOMRect.prototype, {
         contains: {

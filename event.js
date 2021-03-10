@@ -51,11 +51,14 @@ export default class Event
         let { options = {}, ...events } = settings;
 
         options = {
-            ...{ capture: false, passive: true, details: true, selector: null, once: false },
+            ...{ capture: false, passive: true, details: true, selector: null, once: false, useCapture: false },
             ...options,
         };
         const once = options.once;
         delete options.once;
+
+        const useCapture = options.useCapture;
+        delete options.useCapture;
 
         const hash = JSON.stringify(options);
 
@@ -106,7 +109,8 @@ export default class Event
                                 callback(value, element, e);
                             }
                         },
-                        options
+                        options,
+                        useCapture
                     );
                 }
 

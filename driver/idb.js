@@ -1,5 +1,3 @@
-import * as Comlink from 'https://fyncdn.nl/js/lib/comlink/comlink.js';
-
 export default class Idb
 {
     #driver = indexedDB;

@@ -7,5 +7,5 @@ export default async function lock(subject, callback)
         await locks.get(subject);
     }
 
-    locks.set(subject, (async () => await callback())());
+    locks.set(subject, callback());
 }

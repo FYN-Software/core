@@ -1,4 +1,4 @@
-import { objectFromEntries } from './extends.js';
+import { objectFromEntries } from '@fyn-software/core/extends.js';
 
 const constructors = Symbol('constructors');
 

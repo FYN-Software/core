@@ -1,5 +1,3 @@
-const store = Symbol('store');
-
 export default class Queue extends EventTarget
 {
     #store = [];
@@ -39,7 +37,9 @@ export default class Queue extends EventTarget
 
     *[Symbol.iterator]()
     {
-        while(this.length > 0)
+        const c = this.length;
+
+        for(let i = 0; i < c; i++)
         {
             yield this.dequeue();
         }

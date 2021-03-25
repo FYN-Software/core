@@ -1,1 +1,1 @@
-export { default as Vector2 } from './math/vector2.js';
+export { default as Vector2 } from '@fyn-software/core/math/vector2.js';

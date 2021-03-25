@@ -1,5 +1,4 @@
-import {AsyncFunction} from '../component/template.js';
-import Event from './event.js';
+import Event from '@fyn-software/core/event.js';
 
 Object.defineProperties(String.prototype, {
     toDashCase: {

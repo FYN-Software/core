@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "module": "es2020",
+        "moduleResolution": "node",
+        "target": "es2020",
+        "strict": true,
+        "outDir": "dist",
+        "baseUrl": ".",
+        "rootDir": "./src",
+        "sourceMap": true,
+        "composite": true,
+        "declaration": true,
+        "declarationMap": true
+    },
+    "exclude": [
+        "**/node_modules"
+    ],
+    "include": [
+        "src",
+        "types"
+    ]
+}

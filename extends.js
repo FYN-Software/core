@@ -1,4 +1,5 @@
 import Event from '@fyn-software/core/event.js';
+import For from '@fyn-software/component/directive/for.js';
 
 Object.defineProperties(String.prototype, {
     toDashCase: {
@@ -159,7 +160,14 @@ Object.defineProperties(Array.prototype, {
         {
             return this.reduce(async (memo, e) => await predicate(e) ? [...await memo, e] : memo, []);
         },
-    }
+    },
+    shuffle: {
+        enumerable: false,
+        value()
+        {
+            return this.map(a => [Math.random(), a]).sort((a, b) => a[0] - b[0]).map(a => a[1]);
+        },
+    },
 });
 Object.defineProperties(Array, {
     compare: {
@@ -170,13 +178,13 @@ Object.defineProperties(Array, {
         enumerable: false
     },
     fromAsync: {
-        async value(iterator)
+        async value(iterator, map = i => i)
         {
             const result = [];
 
             for await (const item of iterator)
             {
-                result.push(item);
+                result.push(await map(item));
             }
 
             return result;
@@ -431,9 +439,11 @@ if(typeof HTMLElement !== 'undefined')
         index: {
             get()
             {
-                return this.hasAttribute('index')
-                    ? Number.parseInt(this.getAttribute('index'))
-                    : Array.from(this.parentNode.children).indexOf(this);
+                return Number.parseInt(
+                    this.getAttribute('index')
+                    ?? For.indices.get(this) // TODO(Chris Kruining) Find a better method of accessing the indices, core package should not access component package...
+                    ?? Array.from(this.parentNode.children).indexOf(this)
+                );
             },
         },
         cloneStyle: {
@@ -772,6 +782,15 @@ if(typeof Number !== 'undefined')
 if(typeof DocumentFragment !== 'undefined')
 {
     Object.defineProperties(DocumentFragment, {
+        fromElement: {
+            value(element)
+            {
+                const fragment = new DocumentFragment();
+                fragment.appendChild(element);
+
+                return fragment;
+            },
+        },
         fromString: {
             value(str)
             {
@@ -956,14 +975,4 @@ export function equals(a, b, references = new WeakSet())
     }
 
     return a === b;
-}
-
-export function objectFromEntries(arr)
-{
-    return arr.reduce((t, [ n, v ]) =>
-    {
-        t[n] = v;
-
-        return t;
-    }, {});
 }

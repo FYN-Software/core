@@ -1,22 +1,15 @@
-import lock from './lock.js';
-
-export default class Queue extends EventTarget
+export default class Queue<T> extends EventTarget implements Iterable<T>
 {
-    #store = [];
+    #store: Array<T> = [];
 
-    constructor()
-    {
-        super();
-    }
-
-    enqueue(...items)
+    public enqueue(...items: Array<T>)
     {
         this.#store.push(...items);
 
         this.emit('enqueued', items);
     }
 
-    dequeue()
+    public dequeue(): T|undefined
     {
         const item = this.#store.shift();
 
@@ -25,35 +18,35 @@ export default class Queue extends EventTarget
         return item;
     }
 
-    clear()
+    public clear(): void
     {
         this.#store.splice(0, this.#store.length);
 
         this.emit('cleared');
     }
 
-    get [Symbol.toStringTag]()
+    public get [Symbol.toStringTag](): string
     {
-        return `[\n\t${this.#store.map((i, k) => `${k} :: ${JSON.stringify(i)}`).join('\n\t')}\n]`;
+        return `[\n\t${this.#store.map((i: T, k: number) => `${k} :: ${JSON.stringify(i)}`).join('\n\t')}\n]`;
     }
 
-    *[Symbol.iterator]()
+    public *[Symbol.iterator](): Generator<T, void, undefined>
     {
         yield* this.#store;
         this.#store = [];
     }
 
-    get first()
+    public get first(): T|undefined
     {
         return this.#store.first;
     }
 
-    get last()
+    public get last(): T|undefined
     {
         return this.#store.last;
     }
 
-    get length()
+    public get length(): number
     {
         return this.#store.length;
     }

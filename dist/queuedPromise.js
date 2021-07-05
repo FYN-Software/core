@@ -1,6 +1,8 @@
 export default class QueuedPromise {
+    promise;
+    queue = [];
+    proxy;
     constructor(promise) {
-        this.queue = [];
         this.promise = promise;
         this.proxy = new Proxy(() => { }, {
             get: (c, p) => {

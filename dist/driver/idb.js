@@ -1,47 +1,33 @@
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, privateMap, value) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to set private field on non-instance");
-    }
-    privateMap.set(receiver, value);
-    return value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, privateMap) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to get private field on non-instance");
-    }
-    return privateMap.get(receiver);
-};
-var _driver, _name, _connection, _context;
 export default class Idb {
+    #driver = indexedDB;
+    #name;
+    #connection;
+    #context;
     constructor(name) {
-        _driver.set(this, indexedDB);
-        _name.set(this, void 0);
-        _connection.set(this, void 0);
-        _context.set(this, void 0);
-        __classPrivateFieldSet(this, _name, name);
+        this.#name = name;
     }
     async open(stores, version) {
         return new Promise((resolve, revoke) => {
-            const connection = __classPrivateFieldGet(this, _driver).open(__classPrivateFieldGet(this, _name), version);
+            const connection = this.#driver.open(this.#name, version);
             connection.onerror = e => revoke(e);
             connection.onupgradeneeded = () => {
-                __classPrivateFieldSet(this, _context, connection.result);
+                this.#context = connection.result;
                 if (stores === undefined) {
                     return;
                 }
                 for (const [name, keyPath] of Object.entries(stores)) {
-                    __classPrivateFieldGet(this, _context).createObjectStore(name, { keyPath });
+                    this.#context.createObjectStore(name, { keyPath });
                 }
             };
             connection.onsuccess = () => {
-                __classPrivateFieldSet(this, _context, connection.result);
+                this.#context = connection.result;
                 resolve(this);
             };
-            __classPrivateFieldSet(this, _connection, connection);
+            this.#connection = connection;
         });
     }
     async transaction(store, mode = 'readwrite') {
-        return __classPrivateFieldGet(this, _context)?.transaction(store, mode).objectStore(store);
+        return this.#context?.transaction(store, mode).objectStore(store);
     }
     async get(name, query) {
         const table = await this.transaction(name, 'readonly');
@@ -83,9 +69,7 @@ export default class Idb {
         return rows;
     }
     get context() {
-        return __classPrivateFieldGet(this, _context);
+        return this.#context;
     }
 }
-_driver = new WeakMap(), _name = new WeakMap(), _connection = new WeakMap(), _context = new WeakMap();
-// Comlink.expose(Idb);
 //# sourceMappingURL=idb.js.map

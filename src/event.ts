@@ -5,7 +5,7 @@ export default class Event
 
     public static debounce(delay: number, callback: (...args: Array<any>) => void)
     {
-        let timeout: number|undefined;
+        let timeout: any;
 
         return function(this: any, ...args: Array<any>)
         {
@@ -21,7 +21,7 @@ export default class Event
 
     public static throttle(delay: number, callback: (...args: Array<any>) => void)
     {
-        let timeout: number|undefined;
+        let timeout: any;
 
         return function(this: any, ...args: Array<any>)
         {

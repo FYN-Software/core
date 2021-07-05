@@ -19,7 +19,7 @@ export default class QueuedPromise implements IQueuedPromise
 
                 if(p in this.promise)
                 {
-                    return this.promise[p as keyof Promise<any>].bind(this.promise);
+                    return (this.promise[p as keyof Promise<any>] as Function).bind(this.promise);
                 }
 
                 this.queue.push({ property: p, args: [] });

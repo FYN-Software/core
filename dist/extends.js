@@ -1,4 +1,6 @@
 import Event from './event.js';
+import * as Functions from './functions.js';
+export * from './functions.js';
 Object.defineProperties(Array.prototype, {
     compare: {
         value(arr2) {
@@ -37,51 +39,6 @@ Object.defineProperties(Array.prototype, {
             return this[this.length - 1];
         },
     },
-    sum: {
-        enumerable: false,
-        get() {
-            return this.reduce((t, v) => t + v, 0);
-        },
-    },
-    indexOfMinValue: {
-        enumerable: false,
-        get() {
-            let value = Infinity;
-            let index = -1;
-            for (const [i, v] of this.entries()) {
-                if (v < value) {
-                    value = v;
-                    index = i;
-                }
-            }
-            return index;
-        },
-    },
-    indexOfMaxValue: {
-        enumerable: false,
-        get() {
-            let value = -Infinity;
-            let index = -1;
-            for (const [i, v] of this.entries()) {
-                if (v > value) {
-                    value = v;
-                    index = i;
-                }
-            }
-            return index;
-        },
-    },
-    chunk: {
-        enumerable: false,
-        value(size) {
-            let out = [];
-            const chunks = Math.ceil(this.length / size);
-            for (let c = 0; c < chunks; c++) {
-                out.push(this.slice(c * size, Math.min(this.length, (c + 1) * size)));
-            }
-            return out;
-        },
-    },
     filterAsync: {
         enumerable: false,
         async value(predicate) {
@@ -105,27 +62,7 @@ Object.defineProperties(Array, {
         enumerable: false,
     },
     fromAsync: {
-        async value(iterable, map = i => i) {
-            const result = [];
-            for await (const item of iterable) {
-                result.push(await map(item));
-            }
-            return result;
-        },
-        enumerable: false,
-    },
-});
-Object.defineProperties(Math, {
-    clamp: {
-        value(lowerBound, upperBound, value) {
-            return value.clamp(lowerBound, upperBound);
-        },
-        enumerable: false,
-    },
-    mod: {
-        value(value, radix) {
-            return value.mod(radix);
-        },
+        value: Functions.arrayFromAsync,
         enumerable: false,
     },
 });
@@ -288,7 +225,6 @@ Object.defineProperties(Element.prototype, {
     __index: {
         get() {
             return Number.parseInt(this.getAttribute('index')
-                // ?? For.indices.get(this) // TODO(Chris Kruining) Find a better method of accessing the indices, core package should not access component package...
                 ?? Array.from(this.parentNode.children).indexOf(this));
         },
     },
@@ -354,73 +290,4 @@ Object.defineProperties(window, {
         value: (s, e) => Array(e - s).fill(1).map((_, i) => s + i),
     },
 });
-export function clone(obj, root = null) {
-    if (obj === null || typeof obj !== 'object') {
-        return obj;
-    }
-    // Handle Date
-    if (obj instanceof Date) {
-        let copy = new Date();
-        copy.setTime(obj.getTime());
-        return copy;
-    }
-    if (root === null) {
-        root = obj;
-    }
-    // Handle Array
-    if (obj instanceof Array) {
-        return obj.reduce((t, i) => {
-            if (Object.is(i, root) === false) {
-                t.push(clone(i));
-            }
-            return t;
-        }, []);
-    }
-    // Handle Set
-    if (obj instanceof Set) {
-        return new Set(Array.from(obj).map(v => clone(v)));
-    }
-    // Handle Object
-    return Object.entries(obj).reduce((t, [k, v]) => {
-        if (!Object.is(v, root) && !k.startsWith('__')) {
-            t[k] = clone(v, root);
-        }
-        return t;
-    }, {});
-}
-export function equals(a, b, references = new WeakSet()) {
-    // NOTE(Chris Kruining) This is an attempt to catch cyclic references
-    if (typeof a === 'object' && a !== undefined && a !== null) {
-        if (references.has(a)) {
-            return true;
-        }
-        references.add(a);
-    }
-    if (typeof a !== typeof b) {
-        return false;
-    }
-    if (a === null || typeof a !== 'object' || b === null || typeof b !== 'object') {
-        return a === b;
-    }
-    // Handle Array
-    if (a instanceof Array && b instanceof Array) {
-        return Array.compare(a, b);
-    }
-    // Handle Object
-    if (a instanceof Object && b instanceof Object) {
-        if (a.constructor.name !== b.constructor.name) {
-            return false;
-        }
-        if (Object.getOwnPropertyNames(a).compare(Object.getOwnPropertyNames(b)) === false) {
-            return false;
-        }
-        for (const p of Object.getOwnPropertyNames(a)) {
-            if (equals(a[p], b[p], references) !== true) {
-                return false;
-            }
-        }
-        return true;
-    }
-    return a === b;
-}
 //# sourceMappingURL=extends.js.map

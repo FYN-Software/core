@@ -1,6 +1,7 @@
 export default class Stream {
+    _source;
+    _transformers = [];
     constructor(source) {
-        this._transformers = [];
         this._source = source;
     }
     pipe(transformer, ...args) {

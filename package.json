@@ -2,7 +2,6 @@
     "name": "@fyn-software/core",
     "description": "FYN Core",
     "version": "0.0.1",
-    "main": "extends.js",
     "scripts": {
         "release": "npm-github-release"
     },

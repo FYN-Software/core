@@ -2,6 +2,7 @@ export default abstract class Style
 {
     private static map : Map<string, CSSStyleSheet> = new Map();
     private static urls : Map<string, string> = new Map();
+    private static defined : Map<string, [ string, object ]> = new Map();
 
     public static get(...keys: string[]): CSSStyleSheet[]
     {
@@ -9,6 +10,11 @@ export default abstract class Style
             if(this.map.has(key) === false)
             {
                 this.map.set(key, new CSSStyleSheet());
+
+                if(this.defined.has(key))
+                {
+                    void this.set(key, ...this.defined.get(key)!);
+                }
             }
 
             return this.map.get(key)!;
@@ -22,11 +28,6 @@ export default abstract class Style
             return;
         }
 
-        if(url.includes('generic'))
-        {
-            console.trace(key, url);
-        }
-
         this.urls.set(key, url);
 
         const [ sheet ] = this.get(key);
@@ -35,11 +36,17 @@ export default abstract class Style
         await sheet.replace(css);
     }
 
+    public static define(key: string, url: string, options = {}): void
+    {
+        this.defined.set(key, [ url, options ]);
+    }
+
     public static async fromString(key: string, content: string): Promise<void>
     {
         if(this.map.has(key) === false)
         {
-            this.map.set(key, new CSSStyleSheet({ crossOrigin: 'anonymous' }));
+            // this.map.set(key, new CSSStyleSheet({ crossOrigin: 'anonymous' }));
+            this.map.set(key, new CSSStyleSheet());
         }
 
         return this.map.get(key)!.replace(content);

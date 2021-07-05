@@ -1,22 +1,16 @@
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, privateMap, value) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to set private field on non-instance");
-    }
-    privateMap.set(receiver, value);
-    return value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, privateMap) {
-    if (!privateMap.has(receiver)) {
-        throw new TypeError("attempted to get private field on non-instance");
-    }
-    return privateMap.get(receiver);
-};
-var _lastId;
 export default class EventSource extends EventTarget {
+    static init = {
+        credentials: 'omit',
+        mode: 'cors',
+        headers: {
+            'Accept': 'text/event-stream',
+        },
+    };
+    controller = new AbortController();
+    request;
+    #lastId = -1;
     constructor(url, init = {}) {
         super();
-        this.controller = new AbortController();
-        _lastId.set(this, -1);
         this.request = fetch(url, {
             ...EventSource.init,
             ...init,
@@ -39,12 +33,12 @@ export default class EventSource extends EventTarget {
                 yield data;
             }
             if (id !== null) {
-                __classPrivateFieldSet(this, _lastId, id);
+                this.#lastId = id;
             }
         }
     }
     get lastId() {
-        return __classPrivateFieldGet(this, _lastId);
+        return this.#lastId;
     }
     async close() {
         this.emit('done');
@@ -65,9 +59,6 @@ export default class EventSource extends EventTarget {
                 }
                 yield* decoder
                     .decode(value, { stream: true })
-                    // these 2 functions are synchronous,
-                    // I believe I could still squeeze a
-                    // bit more performance here, if needed
                     .split('\n\n')
                     .filter(m => m.length > 0);
             }
@@ -112,12 +103,4 @@ export default class EventSource extends EventTarget {
         }
     }
 }
-_lastId = new WeakMap();
-EventSource.init = {
-    credentials: 'omit',
-    mode: 'cors',
-    headers: {
-        'Accept': 'text/event-stream',
-    },
-};
 //# sourceMappingURL=eventSource.js.map

@@ -1,4 +1,6 @@
 export default class Event {
+    static listeners = new WeakMap();
+    static defaultOptions = { capture: false, once: false, passive: true, signal: undefined, details: true, selector: null };
     static debounce(delay, callback) {
         let timeout;
         return function (...args) {
@@ -100,6 +102,4 @@ export default class Event {
         })));
     }
 }
-Event.listeners = new WeakMap();
-Event.defaultOptions = { capture: false, once: false, passive: true, signal: undefined, details: true, selector: null };
 //# sourceMappingURL=event.js.map

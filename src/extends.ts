@@ -1,4 +1,7 @@
 import Event from './event.js';
+import * as Functions from './functions.js';
+
+export * from './functions.js';
 
 Object.defineProperties(Array.prototype, {
     compare: {
@@ -49,66 +52,6 @@ Object.defineProperties(Array.prototype, {
             return this[this.length - 1];
         },
     },
-    sum: {
-        enumerable: false,
-        get<T extends number>(this: Array<T>): number
-        {
-            return this.reduce((t: number, v: number) => t + v, 0);
-        },
-    },
-    indexOfMinValue: {
-        enumerable: false,
-        get<T extends number>(this: Array<T>): number
-        {
-            let value = Infinity;
-            let index = -1;
-
-            for(const [ i, v ] of this.entries())
-            {
-                if(v < value)
-                {
-                    value = v;
-                    index = i;
-                }
-            }
-
-            return index;
-        },
-    },
-    indexOfMaxValue: {
-        enumerable: false,
-        get<T extends number>(this: Array<T>): number
-        {
-            let value = -Infinity;
-            let index = -1;
-
-            for(const [ i, v ] of this.entries())
-            {
-                if(v > value)
-                {
-                    value = v;
-                    index = i;
-                }
-            }
-
-            return index;
-        },
-    },
-    chunk: {
-        enumerable: false,
-        value<T>(size: number): Array<Array<T>>
-        {
-            let out: Array<Array<T>> = [];
-            const chunks = Math.ceil(this.length / size);
-
-            for(let c = 0; c < chunks; c++)
-            {
-                out.push(this.slice(c * size, Math.min(this.length, (c + 1) * size)));
-            }
-
-            return out;
-        },
-    },
     filterAsync: {
         enumerable: false,
         async value<T>(predicate: (toTest: T) => Promise<Boolean>): Promise<Array<T>>
@@ -135,34 +78,7 @@ Object.defineProperties(Array, {
         enumerable: false,
     },
     fromAsync: {
-        async value<TIn, TOut>(iterable: AsyncIterable<TIn>|Iterable<TIn>, map: (i: TIn) => TOut = i => i as any): Promise<Array<TOut>>
-        {
-            const result = [];
-
-            for await (const item of iterable)
-            {
-                result.push(await map(item));
-            }
-
-            return result;
-        },
-        enumerable: false,
-    },
-});
-
-Object.defineProperties(Math, {
-    clamp: {
-        value(lowerBound: number, upperBound: number, value: number): number
-        {
-            return value.clamp(lowerBound, upperBound);
-        },
-        enumerable: false,
-    },
-    mod: {
-        value(value: number, radix: number): number
-        {
-            return value.mod(radix);
-        },
+        value: Functions.arrayFromAsync,
         enumerable: false,
     },
 });
@@ -462,111 +378,3 @@ Object.defineProperties(window, {
         value: (s: number, e: number) => Array(e - s).fill(1).map((_, i: number) => s + i),
     },
 });
-
-export function clone<T extends object>(obj: T, root: T|null = null): T
-{
-    if(obj === null || typeof obj !== 'object')
-    {
-        return obj;
-    }
-
-    // Handle Date
-    if(obj instanceof Date)
-    {
-        let copy = new Date();
-        copy.setTime(obj.getTime());
-
-        return copy as T;
-    }
-
-    if(root === null)
-    {
-        root = obj;
-    }
-
-    // Handle Array
-    if(obj instanceof Array)
-    {
-        return obj.reduce((t, i) => {
-            if(Object.is(i, root) === false)
-            {
-                t.push(clone(i));
-            }
-
-            return t;
-        }, []);
-    }
-
-    // Handle Set
-    if(obj instanceof Set)
-    {
-        return new Set(Array.from(obj).map(v => clone(v))) as T;
-    }
-
-    // Handle Object
-    return Object.entries(obj).reduce((t: any, [ k, v ]) =>
-    {
-        if(!Object.is(v, root) && !k.startsWith('__'))
-        {
-            t[k] = clone(v, root);
-        }
-
-        return t;
-    }, {});
-}
-
-export function equals<T>(a: T, b: T, references: WeakSet<any> = new WeakSet()): boolean
-{
-    // NOTE(Chris Kruining) This is an attempt to catch cyclic references
-    if(typeof a === 'object' && a !== undefined && a !== null)
-    {
-        if (references.has(a))
-        {
-            return true;
-        }
-
-        references.add(a);
-    }
-
-    if(typeof a !== typeof b)
-    {
-        return false;
-    }
-
-    if(a === null || typeof a !== 'object' || b === null || typeof b !== 'object')
-    {
-        return a === b;
-    }
-
-    // Handle Array
-    if(a instanceof Array && b instanceof Array)
-    {
-        return Array.compare(a, b);
-    }
-
-    // Handle Object
-    if(a instanceof Object && b instanceof Object)
-    {
-        if((a as Object).constructor.name !== (b as Object).constructor.name)
-        {
-            return false;
-        }
-
-        if(Object.getOwnPropertyNames(a).compare(Object.getOwnPropertyNames(b)) === false)
-        {
-            return false;
-        }
-
-        for(const p of Object.getOwnPropertyNames(a))
-        {
-            if(equals((a as any)[p], (b as any)[p], references) !== true)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    return a === b;
-}

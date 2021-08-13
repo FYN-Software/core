@@ -10,6 +10,13 @@ export async function arrayFromAsync<TIn, TOut>(iterable: AsyncIterable<TIn>|Ite
     return result;
 }
 
+export async function replaceAllAsync(subject: string, regex: RegExp, predicate: (...matches: Array<string>) => Promise<string>): Promise<string>
+{
+    const data: Array<string> = await Promise.all([ ...subject.matchAll(regex) ].map(matches => predicate(...matches)));
+
+    return subject.replaceAll(regex, () => data.shift()!);
+}
+
 export function clone<T extends object>(obj: T, root: T|null = null): T
 {
     if(obj === null || typeof obj !== 'object')

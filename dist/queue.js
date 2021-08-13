@@ -1,33 +1,33 @@
 export default class Queue extends EventTarget {
-    #store = [];
+    _store = [];
     enqueue(...items) {
-        this.#store.push(...items);
+        this._store.push(...items);
         this.emit('enqueued', items);
     }
     dequeue() {
-        const item = this.#store.shift();
+        const item = this._store.shift();
         this.emit('dequeued', item);
         return item;
     }
     clear() {
-        this.#store.splice(0, this.#store.length);
+        this._store.splice(0, this._store.length);
         this.emit('cleared');
     }
     get [Symbol.toStringTag]() {
-        return `[\n\t${this.#store.map((i, k) => `${k} :: ${JSON.stringify(i)}`).join('\n\t')}\n]`;
+        return `[\n\t${this._store.map((i, k) => `${k} :: ${JSON.stringify(i)}`).join('\n\t')}\n]`;
     }
     *[Symbol.iterator]() {
-        yield* this.#store;
-        this.#store = [];
+        yield* this._store;
+        this._store = [];
     }
     get first() {
-        return this.#store.first;
+        return this._store.first;
     }
     get last() {
-        return this.#store.last;
+        return this._store.last;
     }
     get length() {
-        return this.#store.length;
+        return this._store.length;
     }
 }
 //# sourceMappingURL=queue.js.map

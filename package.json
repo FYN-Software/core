@@ -2,6 +2,10 @@
     "name": "@fyn-software/core",
     "description": "FYN Core",
     "version": "0.0.1",
+    "type": "module",
+    "exports": {
+        "./*": "./dist/*"
+    },
     "scripts": {
         "release": "npm-github-release"
     },
@@ -19,5 +23,8 @@
     "publishConfig": {
         "access": "public",
         "registry": "https://npm.pkg.github.com/"
+    },
+    "dependencies": {
+        "tslib": "^2.3.0"
     }
 }

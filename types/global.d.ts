@@ -6,6 +6,7 @@ interface Array<T>
     chunk(size: number): Array<Array<T>>;
     chunk(size: number): Array<Array<T>>;
     filterAsync(predicate: (toTest: T) => Promise<boolean>): Promise<Array<T>>;
+    findAsync(predicate: (toTest: T) => Promise<boolean>): Promise<T|undefined>;
     first: T|undefined;
     last: T|undefined;
     sum: number;
@@ -42,6 +43,21 @@ interface HTMLElement
     attachInternals(): ElementInternals;
 }
 
+interface HTMLTemplateElement
+{
+    innerHTML: string;
+}
+
+interface DocumentFragment
+{
+    innerHTML: string;
+}
+interface DocumentFragmentConstructor
+{
+    fromString(html: string): DocumentFragment;
+    fromElement(html: string): DocumentFragment;
+}
+
 interface DocumentOrShadowRoot
 {
     adoptedStyleSheets: Array<CSSStyleSheet>
@@ -76,10 +92,12 @@ declare interface String
     toDashCase(): string;
     toSnakeCase(): string;
     toCamelCase(): string;
+    toPascalCase(): string;
     capitalize(): string;
     toAsyncIterable(): AsyncGenerator<string, void, void>;
     replaceAll(regex: RegExp, callback: (...matches: Array<string>) => string): string
-    replaceAllAsync(regex: RegExp, callback: (...matches: Array<string>) => string): Promise<string>
+    replaceAll(regex: RegExp, replacement: string): string
+    replaceAllAsync(regex: RegExp, callback: (...matches: Array<string>) => string|Promise<string>): Promise<string>
 }
 
 interface Promise<T>
@@ -103,12 +121,12 @@ type Options = Partial<{
 }>;
 
 // NOTE(Chris Kruining) The `any` return type is explicit, do NOT change
-type BuiltInListener<T extends Element, Key extends keyof HTMLElementEventMap> = (event: HTMLElementEventMap[Key], target: T) => any;
-type Listener<T extends Element, TDetails = any> = (details: TDetails, target: T, event: CustomEvent<TDetails>) => any;
+type BuiltInListener<T extends Element, Key extends keyof HTMLElementEventMap> = (event: HTMLElementEventMap[Key], target: T extends Target ? Element : T) => any;
+type Listener<T extends Element, TDetails = any> = (details: TDetails, target: T extends Target ? Element : T, event: CustomEvent<TDetails>) => any;
 
 type FilteredEventMap<TEvents> = keyof Omit<HTMLElementEventMap, keyof TEvents|'options'>;
 
-type EventListenerConfig<T extends Element, TEvents extends object> = {
+type EventListenerConfig<T extends Target<TEvents>|Element, TEvents extends EventDefinition> = {
     options?: Options;
     [key: string]: Listener<T>|Options|undefined;
 } & {
@@ -117,16 +135,30 @@ type EventListenerConfig<T extends Element, TEvents extends object> = {
     [Key in keyof Omit<TEvents, 'options'>]?: Listener<T, TEvents[Key]>;
 };
 
+type EventDefinition = {
+    [key: string]: any;
+}
+
+interface Target<TEvents extends EventDefinition = {}> extends HTMLElement
+{
+    readonly events: TEvents;
+}
+
 interface EventTarget
 {
-    on<T extends Element = Element>(
-        selector: string|EventListenerConfig<T, {}>,
-        settings?: EventListenerConfig<T, {}>
+    on<T extends Target = Target>(
+        selector: string|EventListenerConfig<T, T['events']>,
+        settings?: EventListenerConfig<T, T['events']>
     ): EventTarget;
 
-    on<T extends Element, TEvents extends object>(
+    on<T extends Target<TEvents>, TEvents extends object = T['events']>(
         selector: string|EventListenerConfig<T, TEvents>,
         settings?: EventListenerConfig<T, TEvents>
+    ): EventTarget;
+
+    on<T extends Element>(
+        selector: string|EventListenerConfig<T, {}>,
+        settings?: EventListenerConfig<T, {}>
     ): EventTarget;
 
     trigger(event: string): EventTarget;
@@ -142,16 +174,6 @@ interface JSON
 interface DOMRect
 {
     contains(x: number, y: number): boolean;
-}
-
-interface DocumentFragment
-{
-    innerHTML: string;
-}
-interface DocumentFragmentConstructor
-{
-    fromString(html: string): DocumentFragment;
-    fromElement(html: string): DocumentFragment;
 }
 
 type Constructor<T extends object = object> = new (...args: any[]) => T;

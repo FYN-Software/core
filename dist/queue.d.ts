@@ -1,5 +1,5 @@
 export default class Queue<T> extends EventTarget implements Iterable<T> {
-    #private;
+    private _store;
     enqueue(...items: Array<T>): void;
     dequeue(): T | undefined;
     clear(): void;

@@ -5,6 +5,10 @@ export async function arrayFromAsync(iterable, map = i => i) {
     }
     return result;
 }
+export async function replaceAllAsync(subject, regex, predicate) {
+    const data = await Promise.all([...subject.matchAll(regex)].map(matches => predicate(...matches)));
+    return subject.replaceAll(regex, () => data.shift());
+}
 export function clone(obj, root = null) {
     if (obj === null || typeof obj !== 'object') {
         return obj;

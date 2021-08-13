@@ -1,6 +1,5 @@
 import Event from './event.js';
 import * as Functions from './functions.js';
-
 export * from './functions.js';
 
 Object.defineProperties(Array.prototype, {
@@ -59,6 +58,19 @@ Object.defineProperties(Array.prototype, {
             return this.reduce(async (memo: Promise<T[]>, e: T) => await predicate(e) ? [...await memo, e] : memo, []);
         },
     },
+    findAsync: {
+        enumerable: false,
+        async value<T>(predicate: (toTest: T) => Promise<Boolean>): Promise<T|undefined>
+        {
+            for(const item of this)
+            {
+                if(await predicate(item) === true)
+                {
+                    return item;
+                }
+            }
+        },
+    },
     shuffle: {
         enumerable: false,
         value<T>(): Array<T>
@@ -83,14 +95,17 @@ Object.defineProperties(Array, {
     },
 });
 
-Object.defineProperties(DOMRect.prototype, {
-    contains: {
-        value(x: number, y: number): boolean
-        {
-            return (x > this.left && x < this.right) && (y > this.top && y < this.bottom);
+if(typeof DOMRect !== 'undefined')
+{
+    Object.defineProperties(DOMRect.prototype, {
+        contains: {
+            value(x: number, y: number): boolean
+            {
+                return (x > this.left && x < this.right) && (y > this.top && y < this.bottom);
+            },
         },
-    },
-});
+    });
+}
 
 Object.defineProperties(Number.prototype, {
     map: {
@@ -138,10 +153,24 @@ Object.defineProperties(String.prototype, {
         },
         enumerable: false,
     },
+    toPascalCase: {
+        value(this: string): string
+        {
+            return this[0].toUpperCase() + this.slice(1).toCamelCase();
+        },
+        enumerable: false,
+    },
     capitalize: {
         value(this: string): string
         {
             return this.charAt(0).toUpperCase() + this.slice(1);
+        },
+        enumerable: false,
+    },
+    replaceAllAsync: {
+        async value(this: string, regex: RegExp, predicate: (...matches: Array<string>) => Promise<string>): Promise<string>
+        {
+            return Functions.replaceAllAsync(this, regex, predicate);
         },
         enumerable: false,
     },
@@ -241,28 +270,48 @@ Object.defineProperties(JSON, {
     },
 });
 
-Object.defineProperties(DocumentFragment, {
-    fromString: {
-        value(str: string)
-        {
-            return document.createRange().createContextualFragment(str);
+if(typeof DocumentFragment !== 'undefined')
+{
+    Object.defineProperties(DocumentFragment, {
+        fromString: {
+            value(str: string)
+            {
+                return document.createRange().createContextualFragment(str);
+            },
         },
-    },
-});
-Object.defineProperties(DocumentFragment.prototype, {
-    innerHTML: {
-        get()
-        {
-            const div = document.createElement('div');
-            div.appendChild(this.cloneNode(true));
+    });
+    Object.defineProperties(DocumentFragment.prototype, {
+        innerHTML: {
+            get()
+            {
+                const div = document.createElement('div');
+                div.appendChild(this.cloneNode(true));
 
-            return div.innerHTML;
-        }
-    },
-});
+                return div.innerHTML;
+            }
+        },
+    });
+}
 
-const originalRemove = Node.prototype.remove;
-Object.defineProperties(Node.prototype, {
+if(typeof HTMLTemplateElement !== 'undefined')
+{
+    Object.defineProperties(HTMLTemplateElement.prototype, {
+        innerHTML: {
+            get()
+            {
+                const div = document.createElement('div');
+                div.appendChild(this.content.cloneNode(true));
+
+                return div.innerHTML;
+            }
+        },
+    });
+}
+
+if(typeof Node !== 'undefined')
+{
+    const originalRemove = Node.prototype.remove;
+    Object.defineProperties(Node.prototype, {
     remove: {
         value(): void
         {
@@ -272,33 +321,40 @@ Object.defineProperties(Node.prototype, {
         }
     },
 });
+}
 
-Object.defineProperties(NodeList.prototype, {
-    clear: {
-        value<T extends NodeList>(this: T): T
-        {
-            for(const node of this)
+if(typeof DOMRect !== 'undefined')
+{
+    Object.defineProperties(NodeList.prototype, {
+        clear: {
+            value<T extends NodeList>(this: T): T
             {
-                node.remove();
+                for(const node of this)
+                {
+                    node.remove();
+                }
+
+                return this;
             }
-
-            return this;
-        }
-    },
-});
-
-Object.defineProperties(Element.prototype, {
-    __index: {
-        get(): number
-        {
-            return Number.parseInt(
-                this.getAttribute('index')
-                // ?? For.indices.get(this) // TODO(Chris Kruining) Find a better method of accessing the indices, core package should not access component package...
-                ?? Array.from(this.parentNode.children).indexOf(this)
-            );
         },
-    },
-});
+    });
+}
+
+if(typeof DOMRect !== 'undefined')
+{
+    Object.defineProperties(Element.prototype, {
+        __index: {
+            get(): number
+            {
+                return Number.parseInt(
+                    this.getAttribute('index')
+                    // ?? For.indices.get(this) // TODO(Chris Kruining) Find a better method of accessing the indices, core package should not access component package...
+                    ?? Array.from(this.parentNode.children).indexOf(this)
+                );
+            },
+        },
+    });
+}
 
 Object.defineProperties(Promise.prototype, {
     stage: {
@@ -327,54 +383,60 @@ Object.defineProperties(Promise, {
     },
 });
 
-Object.defineProperties(NamedNodeMap.prototype, {
-    toggle: {
-        value(key: string): void
-        {
-            if(Array.from<Attr>(this).some(i => i.name === key))
+if(typeof DOMRect !== 'undefined')
+{
+    Object.defineProperties(NamedNodeMap.prototype, {
+        toggle: {
+            value(key: string): void
             {
-                this.removeNamedItem(key);
-            }
-            else
-            {
-                let attr = document.createAttribute(key);
-                attr.value = '';
-                this.setNamedItem(attr);
-            }
-        },
-    },
-    setOnAssert: {
-        value(condition: boolean, name: string, value: any = ''): NamedNodeMap
-        {
-            if(Array.isArray(name))
-            {
-                for(let n of name)
+                if(Array.from<Attr>(this).some(i => i.name === key))
                 {
-                    this.setOnAssert(condition, n, value);
+                    this.removeNamedItem(key);
                 }
-            }
-            else if(condition === true)
-            {
-                let attr = document.createAttribute(name);
-                attr.value = value;
-
-                this.setNamedItem(attr);
-            }
-            else if(condition === false && this.getNamedItem(name) !== null)
-            {
-                this.removeNamedItem(name);
-            }
-
-            return this;
+                else
+                {
+                    let attr = document.createAttribute(key);
+                    attr.value = '';
+                    this.setNamedItem(attr);
+                }
+            },
         },
-    },
-});
+        setOnAssert: {
+            value(condition: boolean, name: string, value: any = ''): NamedNodeMap
+            {
+                if(Array.isArray(name))
+                {
+                    for(let n of name)
+                    {
+                        this.setOnAssert(condition, n, value);
+                    }
+                }
+                else if(condition === true)
+                {
+                    let attr = document.createAttribute(name);
+                    attr.value = value;
 
-Object.defineProperties(window, {
-    AsyncFunction: {
-        value: Object.getPrototypeOf(async function(){}).constructor,
-    },
-    range: {
-        value: (s: number, e: number) => Array(e - s).fill(1).map((_, i: number) => s + i),
-    },
-});
+                    this.setNamedItem(attr);
+                }
+                else if(condition === false && this.getNamedItem(name) !== null)
+                {
+                    this.removeNamedItem(name);
+                }
+
+                return this;
+            },
+        },
+    });
+}
+
+if(typeof DOMRect !== 'undefined')
+{
+    Object.defineProperties(window, {
+        AsyncFunction: {
+            value: Object.getPrototypeOf(async function(){}).constructor,
+        },
+        range: {
+            value: (s: number, e: number) => Array(e - s).fill(1).map((_, i: number) => s + i),
+        },
+    });
+}

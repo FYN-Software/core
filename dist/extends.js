@@ -45,6 +45,16 @@ Object.defineProperties(Array.prototype, {
             return this.reduce(async (memo, e) => await predicate(e) ? [...await memo, e] : memo, []);
         },
     },
+    findAsync: {
+        enumerable: false,
+        async value(predicate) {
+            for (const item of this) {
+                if (await predicate(item) === true) {
+                    return item;
+                }
+            }
+        },
+    },
     shuffle: {
         enumerable: false,
         value() {
@@ -66,13 +76,15 @@ Object.defineProperties(Array, {
         enumerable: false,
     },
 });
-Object.defineProperties(DOMRect.prototype, {
-    contains: {
-        value(x, y) {
-            return (x > this.left && x < this.right) && (y > this.top && y < this.bottom);
+if (typeof DOMRect !== 'undefined') {
+    Object.defineProperties(DOMRect.prototype, {
+        contains: {
+            value(x, y) {
+                return (x > this.left && x < this.right) && (y > this.top && y < this.bottom);
+            },
         },
-    },
-});
+    });
+}
 Object.defineProperties(Number.prototype, {
     map: {
         value(lowerBoundIn, upperBoundIn, lowerBoundOut, upperBoundOut) {
@@ -112,9 +124,21 @@ Object.defineProperties(String.prototype, {
         },
         enumerable: false,
     },
+    toPascalCase: {
+        value() {
+            return this[0].toUpperCase() + this.slice(1).toCamelCase();
+        },
+        enumerable: false,
+    },
     capitalize: {
         value() {
             return this.charAt(0).toUpperCase() + this.slice(1);
+        },
+        enumerable: false,
+    },
+    replaceAllAsync: {
+        async value(regex, predicate) {
+            return Functions.replaceAllAsync(this, regex, predicate);
         },
         enumerable: false,
     },
@@ -186,49 +210,68 @@ Object.defineProperties(JSON, {
         },
     },
 });
-Object.defineProperties(DocumentFragment, {
-    fromString: {
-        value(str) {
-            return document.createRange().createContextualFragment(str);
+if (typeof DocumentFragment !== 'undefined') {
+    Object.defineProperties(DocumentFragment, {
+        fromString: {
+            value(str) {
+                return document.createRange().createContextualFragment(str);
+            },
         },
-    },
-});
-Object.defineProperties(DocumentFragment.prototype, {
-    innerHTML: {
-        get() {
-            const div = document.createElement('div');
-            div.appendChild(this.cloneNode(true));
-            return div.innerHTML;
-        }
-    },
-});
-const originalRemove = Node.prototype.remove;
-Object.defineProperties(Node.prototype, {
-    remove: {
-        value() {
-            Event.dispose(this);
-            originalRemove.call(this);
-        }
-    },
-});
-Object.defineProperties(NodeList.prototype, {
-    clear: {
-        value() {
-            for (const node of this) {
-                node.remove();
+    });
+    Object.defineProperties(DocumentFragment.prototype, {
+        innerHTML: {
+            get() {
+                const div = document.createElement('div');
+                div.appendChild(this.cloneNode(true));
+                return div.innerHTML;
             }
-            return this;
-        }
-    },
-});
-Object.defineProperties(Element.prototype, {
-    __index: {
-        get() {
-            return Number.parseInt(this.getAttribute('index')
-                ?? Array.from(this.parentNode.children).indexOf(this));
         },
-    },
-});
+    });
+}
+if (typeof HTMLTemplateElement !== 'undefined') {
+    Object.defineProperties(HTMLTemplateElement.prototype, {
+        innerHTML: {
+            get() {
+                const div = document.createElement('div');
+                div.appendChild(this.content.cloneNode(true));
+                return div.innerHTML;
+            }
+        },
+    });
+}
+if (typeof Node !== 'undefined') {
+    const originalRemove = Node.prototype.remove;
+    Object.defineProperties(Node.prototype, {
+        remove: {
+            value() {
+                Event.dispose(this);
+                originalRemove.call(this);
+            }
+        },
+    });
+}
+if (typeof DOMRect !== 'undefined') {
+    Object.defineProperties(NodeList.prototype, {
+        clear: {
+            value() {
+                for (const node of this) {
+                    node.remove();
+                }
+                return this;
+            }
+        },
+    });
+}
+if (typeof DOMRect !== 'undefined') {
+    Object.defineProperties(Element.prototype, {
+        __index: {
+            get() {
+                return Number.parseInt(this.getAttribute('index')
+                    ?? Array.from(this.parentNode.children).indexOf(this));
+            },
+        },
+    });
+}
 Object.defineProperties(Promise.prototype, {
     stage: {
         async value(callback) {
@@ -250,44 +293,48 @@ Object.defineProperties(Promise, {
         },
     },
 });
-Object.defineProperties(NamedNodeMap.prototype, {
-    toggle: {
-        value(key) {
-            if (Array.from(this).some(i => i.name === key)) {
-                this.removeNamedItem(key);
-            }
-            else {
-                let attr = document.createAttribute(key);
-                attr.value = '';
-                this.setNamedItem(attr);
-            }
-        },
-    },
-    setOnAssert: {
-        value(condition, name, value = '') {
-            if (Array.isArray(name)) {
-                for (let n of name) {
-                    this.setOnAssert(condition, n, value);
+if (typeof DOMRect !== 'undefined') {
+    Object.defineProperties(NamedNodeMap.prototype, {
+        toggle: {
+            value(key) {
+                if (Array.from(this).some(i => i.name === key)) {
+                    this.removeNamedItem(key);
                 }
-            }
-            else if (condition === true) {
-                let attr = document.createAttribute(name);
-                attr.value = value;
-                this.setNamedItem(attr);
-            }
-            else if (condition === false && this.getNamedItem(name) !== null) {
-                this.removeNamedItem(name);
-            }
-            return this;
+                else {
+                    let attr = document.createAttribute(key);
+                    attr.value = '';
+                    this.setNamedItem(attr);
+                }
+            },
         },
-    },
-});
-Object.defineProperties(window, {
-    AsyncFunction: {
-        value: Object.getPrototypeOf(async function () { }).constructor,
-    },
-    range: {
-        value: (s, e) => Array(e - s).fill(1).map((_, i) => s + i),
-    },
-});
+        setOnAssert: {
+            value(condition, name, value = '') {
+                if (Array.isArray(name)) {
+                    for (let n of name) {
+                        this.setOnAssert(condition, n, value);
+                    }
+                }
+                else if (condition === true) {
+                    let attr = document.createAttribute(name);
+                    attr.value = value;
+                    this.setNamedItem(attr);
+                }
+                else if (condition === false && this.getNamedItem(name) !== null) {
+                    this.removeNamedItem(name);
+                }
+                return this;
+            },
+        },
+    });
+}
+if (typeof DOMRect !== 'undefined') {
+    Object.defineProperties(window, {
+        AsyncFunction: {
+            value: Object.getPrototypeOf(async function () { }).constructor,
+        },
+        range: {
+            value: (s, e) => Array(e - s).fill(1).map((_, i) => s + i),
+        },
+    });
+}
 //# sourceMappingURL=extends.js.map

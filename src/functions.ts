@@ -115,3 +115,8 @@ export function equals<T>(a: T, b: T, references: WeakSet<any> = new WeakSet()):
 
     return a === b;
 }
+
+export function clamp(subject: number, lowerBound: number, upperBound: number): number
+{
+    return Math.min(Math.max(subject, lowerBound), upperBound);
+}

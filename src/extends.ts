@@ -118,7 +118,7 @@ Object.defineProperties(Number.prototype, {
     clamp: {
         value(this: number, lowerBound: number, upperBound: number): number
         {
-            return Math.min(Math.max(this, lowerBound), upperBound);
+            return Functions.clamp(this, lowerBound, upperBound);
         },
         enumerable: false,
     },
@@ -312,15 +312,33 @@ if(typeof Node !== 'undefined')
 {
     const originalRemove = Node.prototype.remove;
     Object.defineProperties(Node.prototype, {
-    remove: {
-        value(): void
-        {
-            Event.dispose(this);
+        childOf: {
+            value(parent: Node)
+            {
+                let el = this.ownerElement ?? this.parentNode;
 
-            originalRemove.call(this);
-        }
-    },
-});
+                while(el !== null)
+                {
+                    if(el === parent)
+                    {
+                        return true;
+                    }
+
+                    el = el.parentNode;
+                }
+
+                return false;
+            },
+        },
+        remove: {
+            value(): void
+            {
+                Event.dispose(this);
+
+                originalRemove.call(this);
+            }
+        },
+    });
 }
 
 if(typeof DOMRect !== 'undefined')
@@ -343,6 +361,22 @@ if(typeof DOMRect !== 'undefined')
 if(typeof DOMRect !== 'undefined')
 {
     Object.defineProperties(Element.prototype, {
+        pathToRoot: {
+            get()
+            {
+                const stack = [ this ];
+                let entry = this;
+
+                while(entry.localName !== 'html')
+                {
+                    entry = entry.parentElement;
+
+                    stack.push(entry);
+                }
+
+                return stack;
+            }
+        },
         __index: {
             get(): number
             {

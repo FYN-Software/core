@@ -66,4 +66,7 @@ export function equals(a, b, references = new WeakSet()) {
     }
     return a === b;
 }
+export function clamp(subject, lowerBound, upperBound) {
+    return Math.min(Math.max(subject, lowerBound), upperBound);
+}
 //# sourceMappingURL=functions.js.map

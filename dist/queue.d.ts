@@ -1,4 +1,10 @@
-export default class Queue<T> extends EventTarget implements Iterable<T> {
+declare type QueueEvents<T> = {
+    enqueued: T;
+    dequeued: T;
+    cleared: never;
+};
+export default class Queue<T> extends EventTarget implements CustomTarget<Queue<T>, QueueEvents<T>>, Iterable<T> {
+    events: QueueEvents<T>;
     private _store;
     enqueue(...items: Array<T>): void;
     dequeue(): T | undefined;
@@ -9,4 +15,5 @@ export default class Queue<T> extends EventTarget implements Iterable<T> {
     get last(): T | undefined;
     get length(): number;
 }
+export {};
 //# sourceMappingURL=queue.d.ts.map

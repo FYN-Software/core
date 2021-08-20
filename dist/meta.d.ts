@@ -1,4 +1,6 @@
 export default class Meta {
-    static for(document: Document): {};
+    static for(document: Document): {
+        [key: string]: string | undefined;
+    };
 }
 //# sourceMappingURL=meta.d.ts.map

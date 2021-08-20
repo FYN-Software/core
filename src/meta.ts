@@ -1,6 +1,6 @@
 export default class Meta
 {
-    public static for(document: Document)
+    public static for(document: Document): { [key: string]: string|undefined }
     {
         return new Proxy({}, {
             get: (_: {}, name: string) => document.querySelector(`meta[name="${name}"]`)?.getAttribute('content'),

@@ -1,4 +1,5 @@
 export default class Queue extends EventTarget {
+    events = {};
     _store = [];
     enqueue(...items) {
         this._store.push(...items);

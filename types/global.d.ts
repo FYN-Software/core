@@ -22,6 +22,7 @@ interface ArrayConstructor
 
 interface Node
 {
+    childOf(parent: Node): boolean;
     remove(): void;
 }
 
@@ -30,12 +31,29 @@ interface NodeList
     clear(): NodeList;
 }
 
+// TODO(Chris Kruining) Remove these hacked polyfills when the CSS-OM finally releases
+interface CSSStyleValue
+{
+    readonly value: any;
+    readonly unit: any;
+}
+
+interface StylePropertyMapReadOnly extends Omit<Map<string, CSSStyleValue>, 'set'>
+{
+    getAll(): Array<CSSStyleValue>;
+}
+// TODO(Chris Kruining) ==============================================================
+
 interface Element
 {
     readonly index: number;
 
     addEventListener<K extends keyof ElementEventMap>(type: K, listener: (this: Element, ev: ElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, useCapture?: boolean): void;
+
+    computedStyleMap(): StylePropertyMapReadOnly;
+
+    readonly pathToRoot: Array<HTMLElement>
 }
 
 interface HTMLElement
@@ -121,12 +139,12 @@ type Options = Partial<{
 }>;
 
 // NOTE(Chris Kruining) The `any` return type is explicit, do NOT change
-type BuiltInListener<T extends Element, Key extends keyof HTMLElementEventMap> = (event: HTMLElementEventMap[Key], target: T extends Target ? Element : T) => any;
-type Listener<T extends Element, TDetails = any> = (details: TDetails, target: T extends Target ? Element : T, event: CustomEvent<TDetails>) => any;
+type BuiltInListener<T extends EventTarget, Key extends keyof HTMLElementEventMap> = (event: HTMLElementEventMap[Key], target: T) => any;
+type Listener<T extends EventTarget, TDetails = any> = (details: TDetails, target: T, event: CustomEvent<TDetails>) => any;
 
-type FilteredEventMap<TEvents> = keyof Omit<HTMLElementEventMap, keyof TEvents|'options'>;
+type FilteredEventMap<TEvents extends EventDefinition> = keyof Omit<HTMLElementEventMap, keyof TEvents|'options'>;
 
-type EventListenerConfig<T extends Target<TEvents>|Element, TEvents extends EventDefinition> = {
+type EventListenerConfig<T extends EventTarget, TEvents extends EventDefinition> = {
     options?: Options;
     [key: string]: Listener<T>|Options|undefined;
 } & {
@@ -144,21 +162,26 @@ interface Target<TEvents extends EventDefinition = {}> extends HTMLElement
     readonly events: TEvents;
 }
 
+interface CustomTarget<T extends CustomTarget<T, T['events']>, TEvents extends EventDefinition = {}> extends EventTarget
+{
+    readonly events: TEvents;
+}
+
 interface EventTarget
 {
-    on<T extends Target = Target>(
+    on(
+        selector: string|EventListenerConfig<HTMLElement, {}>,
+        settings?: EventListenerConfig<HTMLElement, {}>
+    ): EventTarget;
+
+    on<T extends Target>(
         selector: string|EventListenerConfig<T, T['events']>,
         settings?: EventListenerConfig<T, T['events']>
     ): EventTarget;
 
-    on<T extends Target<TEvents>, TEvents extends object = T['events']>(
-        selector: string|EventListenerConfig<T, TEvents>,
-        settings?: EventListenerConfig<T, TEvents>
-    ): EventTarget;
-
-    on<T extends Element>(
-        selector: string|EventListenerConfig<T, {}>,
-        settings?: EventListenerConfig<T, {}>
+    on<T extends CustomTarget<T>>(
+        selector: string|EventListenerConfig<T, T['events']>,
+        settings?: EventListenerConfig<T, T['events']>
     ): EventTarget;
 
     trigger(event: string): EventTarget;

@@ -1,5 +1,13 @@
-export default class Queue<T> extends EventTarget implements Iterable<T>
+type QueueEvents<T> = {
+    enqueued: T;
+    dequeued: T;
+    cleared: never;
+};
+
+export default class Queue<T> extends EventTarget implements CustomTarget<Queue<T>, QueueEvents<T>>, Iterable<T>
 {
+    events: QueueEvents<T> = {} as unknown as QueueEvents<T>;
+
     private _store: Array<T> = [];
 
     public enqueue(...items: Array<T>)

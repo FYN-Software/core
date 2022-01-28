@@ -1,162 +1,215 @@
-export default class Event
+
+const listenerStore: WeakMap<Element, Map<string, Map<string, Set<(...args: Array<any>) => any>>>> = new WeakMap();
+const defaultOptions: Options = { capture: false, once: false, passive: true, signal: undefined, details: true, selector: null };
+
+export function dispatch<T>(target: EventTarget, name: string, init: CustomEventInit<T>, refs: WeakSet<EventTarget> = new WeakSet()): CustomEvent<T>
 {
-    private static listeners: WeakMap<Element, Map<string, Map<string, Set<(...args: Array<any>) => any>>>> = new WeakMap();
-    private static readonly defaultOptions: Options = { capture: false, once: false, passive: true, signal: undefined, details: true, selector: null };
+    const event = new CustomEvent(name, init);
 
-    public static debounce(delay: number, callback: (...args: Array<any>) => void)
+    if(refs.has(target) === false)
     {
-        let timeout: any;
+        target.dispatchEvent(event);
 
-        return function(this: any, ...args: Array<any>)
+        refs.add(target);
+
+        if(event.defaultPrevented === false && event.bubbles === true)
         {
-            clearTimeout(timeout);
+            for(const parentRef of target.parents ?? [])
+            {
+                const parent = parentRef.deref();
+
+                if(parent === undefined)
+                {
+                    target.parents!.delete(parentRef);
+
+                    continue;
+                }
+
+                dispatch(parent, name, init, refs);
+            }
+        }
+    }
+
+    return event;
+}
+
+type Callback = (...args: Array<any>) => any;
+
+export function debounce<T extends Callback>(delay: number, callback: T): T
+{
+    let timeout: any;
+
+    return function(this: any, ...args: Array<any>)
+    {
+        clearTimeout(timeout);
+        timeout = setTimeout(() =>
+        {
+            timeout = undefined;
+
+            callback.apply(this, args);
+        }, delay);
+    } as T;
+}
+
+export function throttle<T extends Callback>(delay: number, callback: T): T
+{
+    let timeout: any;
+
+    return function(this: any, ...args: Array<any>)
+    {
+        if(timeout === null)
+        {
+            callback.apply(this, args);
+
             timeout = setTimeout(() =>
             {
                 timeout = undefined;
-
-                callback.apply(this, args);
             }, delay);
-        };
-    }
-
-    public static throttle(delay: number, callback: (...args: Array<any>) => void)
-    {
-        let timeout: any;
-
-        return function(this: any, ...args: Array<any>)
-        {
-            if(timeout === null)
-            {
-                callback.apply(this, args);
-
-                timeout = setTimeout(() =>
-                {
-                    timeout = undefined;
-                }, delay);
-            }
-        };
-    }
-
-    public static delay(delay: number, callback: (...args: Array<any>) => void)
-    {
-        return function(this: any, ...args: Array<any>)
-        {
-            setTimeout(() => callback.apply(this, args), delay);
-        };
-    }
-
-    public static on<T extends Element, TEvents extends object>(target: T, settings: EventListenerConfig<T, TEvents>)
-    {
-        let { options = {}, ...events } = settings;
-
-        options = {
-            ...Event.defaultOptions,
-            ...options,
-        };
-
-        const once = options.once;
-        delete options.once;
-
-        const hash = JSON.stringify(options);
-
-        if(this.listeners.has(target) === false)
-        {
-            this.listeners.set(target, new Map);
         }
+    } as T;
+}
 
-        if(this.listeners.get(target)!.has(hash) === false)
-        {
-            this.listeners.get(target)!.set(hash, new Map);
-        }
+export function delay<T extends Callback>(delay: number, callback: T): T
+{
+    return function(this: any, ...args: Array<any>)
+    {
+        setTimeout(() => callback.apply(this, args), delay);
+    } as T;
+}
 
-        const listeners = this.listeners.get(target)!.get(hash)!;
+export function on<T extends Element, TEvents extends object>(target: T, settings: EventListenerConfig<T, TEvents>)
+{
+    let { options = {}, ...events } = settings;
 
-        for(const [keys, callback] of Object.entries(events))
-        {
-            for(const event of keys.split(/\|/g))
-            {
-                if(listeners.has(event) === false)
-                {
-                    listeners.set(event, new Set);
+    options = {
+        ...defaultOptions,
+        ...options,
+    };
 
-                    const listener = (e: any) => {
-                            const element = options.selector === null
-                                ? target
-                                : Array.from(target.querySelectorAll(options.selector!))
-                                    .find(el => e.composedPath().includes(el));
+    const once = options.once;
+    delete options.once;
 
-                            if(element === undefined)
-                            {
-                                return;
-                            }
+    const hash = JSON.stringify(options);
 
-                            const value: any = options.details === true && e instanceof CustomEvent
-                                ? e.detail
-                                : e;
-
-                            const listeners = this.listeners.get(target)!.get(hash)!.get(event)!;
-
-                            for(const callback of listeners)
-                            {
-                                if(once)
-                                {
-                                    listeners.delete(callback);
-                                }
-
-                                callback(value, element, e);
-                            }
-                        };
-
-                    target.addEventListener(event, listener, options);
-                }
-
-                this.listeners.get(target)!.get(hash)!.get(event)!.add(callback);
-            }
-        }
+    if(listenerStore.has(target) === false)
+    {
+        listenerStore.set(target, new Map);
     }
 
-    public static trigger(target: Element, name: string): void
+    if(listenerStore.get(target)!.has(hash) === false)
     {
-        let event = document.createEvent('HTMLEvents');
-        event.initEvent(name, false, true);
-
-        target.dispatchEvent(event);
+        listenerStore.get(target)!.set(hash, new Map);
     }
 
-    public static dispose(target: Element): void
+    const listeners = listenerStore.get(target)!.get(hash)!;
+
+    for(const [keys, callback] of Object.entries(events))
     {
-        const events: Map<string, Set<Listener<Element>>> = this.listeners.get(target) ?? new Map();
-
-        for(const [ event, listeners ] of events)
+        for(const event of keys.split(/\|/g))
         {
-            for(const listener of listeners)
+            if(listeners.has(event) === false)
             {
-                target.removeEventListener(event, listener as any);
+                listeners.set(event, new Set);
 
-                listeners.delete(listener);
+                const listener = (e: any) => {
+                    const element = options.selector === null
+                        ? target
+                        : Array.from(target.querySelectorAll(options.selector!))
+                            .find(el => e.composedPath().includes(el));
+
+                    if(element === undefined)
+                    {
+                        return;
+                    }
+
+                    const value: any = options.details === true && e instanceof CustomEvent
+                        ? e.detail
+                        : e;
+
+                    const listeners = listenerStore.get(target)!.get(hash)!.get(event)!;
+
+                    for(const callback of listeners)
+                    {
+                        if(once)
+                        {
+                            listeners.delete(callback);
+                        }
+
+                        callback(value, element, e);
+                    }
+                };
+
+                target.addEventListener(event, listener, options);
             }
 
-            events.delete(event);
-        }
-
-        for(const child of target.children)
-        {
-            this.dispose(child);
+            listenerStore.get(target)!.get(hash)!.get(event)!.add(callback);
         }
     }
+}
 
-    public static async await<TReturn = any>(target: Element, event: string): Promise<TReturn>
+export function trigger(target: Element, name: string): void
+{
+    let event = document.createEvent('HTMLEvents');
+    event.initEvent(name, false, true);
+
+    target.dispatchEvent(event);
+}
+
+export function dispose(target: Element): void
+{
+    const events: Map<string, Set<Listener<Element>>> = listenerStore.get(target) ?? new Map();
+
+    for(const [ event, listeners ] of events)
     {
-        return Promise.race(
-            event.split('|').map((e: string) => new Promise<TReturn>(r => {
-                target.on({
-                    options: {
-                        once: true,
-                        details: true,
-                    },
-                    [e]: (d: TReturn) => r(d),
-                })
-            }))
-        );
+        for(const listener of listeners)
+        {
+            target.removeEventListener(event, listener as any);
+
+            listeners.delete(listener);
+        }
+
+        events.delete(event);
     }
+
+    for(const child of target.children)
+    {
+        dispose(child);
+    }
+}
+
+export async function waitFor<TReturn = any>(target: Element, event: string): Promise<TReturn>
+{
+    return Promise.race(
+        event.split('|').map((e: string) => new Promise<TReturn>(r => {
+            on(target, {
+                options: {
+                    once: true,
+                    details: true,
+                },
+                [e]: (d: TReturn) => r(d),
+            })
+        }))
+    );
+}
+
+export async function *asAsyncIterable<TReturn = any>(target: Element, event: string, signal: AbortSignal): AsyncGenerator<TReturn, void, void>
+{
+    let resolve: (d: TReturn) => void;
+
+    on(target, {
+        options: {
+            details: true,
+        },
+        [event]: (d: TReturn) => resolve(d),
+    })
+
+    do
+    {
+        yield await new Promise((res, rej) => {
+            waitFor(signal as any, 'abort').then(() => rej('aborted'))
+
+            resolve = res;
+        });
+    }
+    while (signal.aborted === false);
 }

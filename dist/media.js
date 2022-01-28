@@ -6,16 +6,14 @@ export var Preference;
     Preference["colorScheme"] = "prefers-color-scheme";
     Preference["contrast"] = "prefers-contrast";
 })(Preference || (Preference = {}));
-export default class Media {
-    static defaultsMap = new Map([
-        [Preference.reducedData, 'reduce'],
-        [Preference.reducedMotion, 'reduce'],
-        [Preference.reducedTransparency, 'reduce'],
-        [Preference.colorScheme, 'light'],
-        [Preference.contrast, 'more'],
-    ]);
-    static prefers(preference, value) {
-        return globalThis.matchMedia(`(${preference}: ${value ?? this.defaultsMap.get(preference)})`).matches;
-    }
+const defaultsMap = new Map([
+    [Preference.reducedData, 'reduce'],
+    [Preference.reducedMotion, 'reduce'],
+    [Preference.reducedTransparency, 'reduce'],
+    [Preference.colorScheme, 'light'],
+    [Preference.contrast, 'more'],
+]);
+export function prefers(preference, value) {
+    return globalThis.matchMedia(`(${preference}: ${value ?? defaultsMap.get(preference)})`).matches;
 }
 //# sourceMappingURL=media.js.map

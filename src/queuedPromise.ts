@@ -27,7 +27,7 @@ export default class QueuedPromise implements IQueuedPromise
                 return this.proxy;
             },
             apply: (t: () => void, c: () => void, a: any[]) => {
-                this.queue.last!.args = a;
+                this.queue[this.queue.length - 1]!.args = a;
 
                 return this.proxy;
             },

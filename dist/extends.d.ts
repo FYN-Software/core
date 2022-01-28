@@ -1,2 +1,2 @@
-export * from './functions.js';
+export {};
 //# sourceMappingURL=extends.d.ts.map

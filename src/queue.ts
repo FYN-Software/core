@@ -6,20 +6,18 @@ type QueueEvents<T> = {
 
 export default class Queue<T> extends EventTarget implements CustomTarget<Queue<T>, QueueEvents<T>>, Iterable<T>
 {
-    events: QueueEvents<T> = {} as unknown as QueueEvents<T>;
-
-    private _store: Array<T> = [];
+    #store: Array<T> = [];
 
     public enqueue(...items: Array<T>)
     {
-        this._store.push(...items);
+        this.#store.push(...items);
 
         this.emit('enqueued', items);
     }
 
     public dequeue(): T|undefined
     {
-        const item = this._store.shift();
+        const item = this.#store.shift();
 
         this.emit('dequeued', item);
 
@@ -28,34 +26,34 @@ export default class Queue<T> extends EventTarget implements CustomTarget<Queue<
 
     public clear(): void
     {
-        this._store.splice(0, this._store.length);
+        this.#store = [];
 
         this.emit('cleared');
     }
 
     public get [Symbol.toStringTag](): string
     {
-        return `[\n\t${this._store.map((i: T, k: number) => `${k} :: ${JSON.stringify(i)}`).join('\n\t')}\n]`;
+        return `[\n\t${this.#store.map((i: T, k: number) => `${k} :: ${JSON.stringify(i)}`).join('\n\t')}\n]`;
     }
 
     public *[Symbol.iterator](): Generator<T, void, undefined>
     {
-        yield* this._store;
-        this._store = [];
+        yield* this.#store;
+        this.#store = [];
     }
 
     public get first(): T|undefined
     {
-        return this._store.first;
+        return this.#store[0];
     }
 
     public get last(): T|undefined
     {
-        return this._store.last;
+        return this.#store[this.#store.length - 1];
     }
 
     public get length(): number
     {
-        return this._store.length;
+        return this.#store.length;
     }
 }

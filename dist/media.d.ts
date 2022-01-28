@@ -5,8 +5,5 @@ export declare enum Preference {
     colorScheme = "prefers-color-scheme",
     contrast = "prefers-contrast"
 }
-export default class Media {
-    private static defaultsMap;
-    static prefers(preference: Preference, value?: string): boolean;
-}
+export declare function prefers(preference: Preference, value?: string): boolean;
 //# sourceMappingURL=media.d.ts.map

@@ -4,8 +4,7 @@ declare type QueueEvents<T> = {
     cleared: never;
 };
 export default class Queue<T> extends EventTarget implements CustomTarget<Queue<T>, QueueEvents<T>>, Iterable<T> {
-    events: QueueEvents<T>;
-    private _store;
+    #private;
     enqueue(...items: Array<T>): void;
     dequeue(): T | undefined;
     clear(): void;

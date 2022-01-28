@@ -17,7 +17,7 @@ export default class QueuedPromise {
                 return this.proxy;
             },
             apply: (t, c, a) => {
-                this.queue.last.args = a;
+                this.queue[this.queue.length - 1].args = a;
                 return this.proxy;
             },
             getPrototypeOf: () => QueuedPromise.prototype,

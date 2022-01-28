@@ -3,120 +3,52 @@ type AnimationOptions = {
     easing?: (t: number) => number,
 };
 
-export default class Animation
+export const linear = (t: number): number => t;
+
+export const easeInQuad = (t: number): number => inExponent(t, 2);
+export const easeOutQuad = (t: number): number => outExponent(t, 2);
+export const easeInOutQuad = (t: number): number => inOutExponent(t, 2);
+
+export const easeInCubic = (t: number): number => inExponent(t, 3);
+export const easeOutCubic = (t: number): number => outExponent(t, 3);
+export const easeInOutCubic = (t: number): number => inOutExponent(t, 3);
+
+export const easeInQuart = (t: number): number => inExponent(t, 4);
+export const easeOutQuart = (t: number): number => outExponent(t, 4);
+export const easeInOutQuart = (t: number): number => inOutExponent(t, 4);
+
+export const easeInQuint = (t: number): number => inExponent(t, 5);
+export const easeOutQuint = (t: number): number => outExponent(t, 5);
+export const easeInOutQuint = (t: number): number => inOutExponent(t, 5);
+
+export const easeIn = (t: number, d: number = 2): number => t**d;
+export const easeOut = (t: number, d: number = 2): number => 1 - t**d;
+export const easeInOut = (t: number, d: number = 2): number => t**d / (t**d + (1 - t)**d);
+
+export function ease(callback: (value: number) => void, options: AnimationOptions = {})
 {
-    public static linear(t: number): number
-    {
-        return t;
-    }
+    const { duration = 300, easing = inOutCubic }: AnimationOptions = options;
 
-    public static inQuad(t: number): number
-    {
-        return Animation.in(t, 2);
-    }
+    let start: number;
+    let elapsed: number;
 
-    public static outQuad(t: number): number
-    {
-        return Animation.out(t, 2);
-    }
-
-    public static inOutQuad(t: number): number
-    {
-        return Animation.inOut(t, 2);
-    }
-
-    public static inCubic(t: number): number
-    {
-        return Animation.in(t, 3);
-    }
-
-    public static outCubic(t: number): number
-    {
-        return Animation.out(t, 3);
-    }
-
-    public static inOutCubic(t: number): number
-    {
-        return Animation.inOut(t, 3);
-    }
-
-    public static inQuart(t: number): number
-    {
-        return Animation.in(t, 4);
-    }
-
-    public static outQuart(t: number): number
-    {
-        return Animation.out(t, 4);
-    }
-
-    public static inOutQuart(t: number): number
-    {
-        return Animation.inOut(t, 4);
-    }
-
-    public static inQuint(t: number): number
-    {
-        return Animation.in(t, 5);
-    }
-
-    public static outQuint(t: number): number
-    {
-        return Animation.out(t, 5);
-    }
-
-    public static inOutQuint(t: number): number
-    {
-        return Animation.inOut(t, 5);
-    }
-
-    public static in(t: number, d: number = 2): number
-    {
-        return t**d;
-    }
-
-    public static out(t: number, d: number = 2): number
-    {
-        return 1 - t**d;
-    }
-
-    public static inOut(t: number, d: number = 2): number
-    {
-        return t**d / (t**d + (1 - t)**d);
-    }
-
-    public static ease(callback: (value: number) => void, options: AnimationOptions = {})
-    {
-        const { duration = 300, easing = Animation.inOutCubic }: AnimationOptions = options;
-
-        if(typeof easing !== 'function' && Animation.hasOwnProperty(easing) === false)
+    let animation = (time: number = 0) => {
+        if(!start)
         {
-            throw new Error(`'${easing}' is not a valid method of 'Easing'`);
+            start = time;
         }
 
-        let start: number;
-        let elapsed: number;
+        elapsed = duration === 1
+            ? duration
+            : time - start;
 
-        let animation = (time: number = 0) => {
-            if(!start)
-            {
-                start = time;
-            }
+        callback(easing(elapsed / duration));
 
-            elapsed = duration === 1
-                ? duration
-                : time - start;
+        if(elapsed < duration)
+        {
+            requestAnimationFrame(time => animation(time));
+        }
+    };
 
-            callback(easing(elapsed / duration));
-
-            if(elapsed < duration)
-            {
-                requestAnimationFrame(time => animation(time));
-            }
-        };
-
-        animation();
-    }
+    animation();
 }
-
-export const ease = Animation.ease;

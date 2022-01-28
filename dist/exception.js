@@ -1,10 +1,10 @@
 export default class Exception extends Error {
-    _inner;
-    _owner;
+    #inner;
+    #owner;
     constructor(message, inner, owner) {
         super(message);
-        this._inner = inner;
-        this._owner = owner;
+        this.#inner = inner;
+        this.#owner = owner;
     }
 }
 //# sourceMappingURL=exception.js.map

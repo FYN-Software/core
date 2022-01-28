@@ -1,6 +1,4 @@
-export default class Font {
-    static fetch(font: FontDeclaration, selector?: string, variants?: Array<string>): Promise<void>;
-    static preview(font: FontDeclaration, selector?: string, variants?: Array<string>): Promise<void>;
-    static list(key: string): Promise<object>;
-}
+export declare function fetchFromNetwork(font: FontDeclaration, selector?: string, variants?: Array<string>): Promise<void>;
+export declare function preview(font: FontDeclaration, selector?: string, variants?: Array<string>): Promise<void>;
+export declare function list(key: string): Promise<object>;
 //# sourceMappingURL=font.d.ts.map

@@ -9,10 +9,13 @@
         "rootDir": "./src",
         "sourceMap": true,
         "composite": true,
+        "incremental": true,
         "declaration": true,
         "declarationMap": true,
-        "removeComments": true,
-        "importHelpers": true
+        "experimentalDecorators": true,
+        "useDefineForClassFields": true,
+        "importHelpers": true,
+        "removeComments": true
     },
     "exclude": [
         "**/node_modules"

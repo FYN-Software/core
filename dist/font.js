@@ -23,16 +23,14 @@ async function load(font, selector, variants = [], preview = false) {
         document.head.appendChild(l);
     });
 }
-export default class Font {
-    static async fetch(font, selector, variants = []) {
-        return load(font, selector, variants, false);
-    }
-    static async preview(font, selector, variants = []) {
-        return load(font, selector, variants, true);
-    }
-    static async list(key) {
-        const url = `https://www.googleapis.com/webfonts/v1/webfonts?sort=popularity&key=${key}`;
-        return (await fetch(url, { headers: { 'content-type': 'application/json' } })).json();
-    }
+export async function fetchFromNetwork(font, selector, variants = []) {
+    return load(font, selector, variants, false);
+}
+export async function preview(font, selector, variants = []) {
+    return load(font, selector, variants, true);
+}
+export async function list(key) {
+    const url = `https://www.googleapis.com/webfonts/v1/webfonts?sort=popularity&key=${key}`;
+    return (await fetch(url, { headers: { 'content-type': 'application/json' } })).json();
 }
 //# sourceMappingURL=font.js.map

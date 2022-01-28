@@ -1,3 +1,5 @@
+import { tryParse } from '../function/json.js';
+
 type Message = {
     id?: number,
     event?: string,
@@ -6,7 +8,7 @@ type Message = {
 
 export default class EventSource extends EventTarget
 {
-    private static init: RequestInit = {
+    static #init: RequestInit = {
         credentials: 'omit',
         mode: 'cors',
         headers: {
@@ -14,20 +16,20 @@ export default class EventSource extends EventTarget
         },
     };
 
-    private controller: AbortController = new AbortController();
-    private readonly request: Promise<Response>;
+    #controller: AbortController = new AbortController();
+    readonly #request: Promise<Response>;
     #lastId: number = -1;
 
     constructor(url: string, init: RequestInit = {})
     {
         super();
 
-        this.request = fetch(url, {
-            ...EventSource.init,
+        this.#request = fetch(url, {
+            ...EventSource.#init,
             ...init,
-            signal: this.controller.signal,
+            signal: this.#controller.signal,
             headers: {
-                ...EventSource.init.headers,
+                ...EventSource.#init.headers,
                 ...(init?.headers ?? {})
             }
         });
@@ -35,7 +37,7 @@ export default class EventSource extends EventTarget
 
     async *listenFor(event: string = 'message'): AsyncIterable<object>
     {
-        for await (const { id = null, event: e, data } of EventSource.parse(this.read(this.request)))
+        for await (const { id = null, event: e, data } of EventSource.#parse(this.#read(this.#request)))
         {
             if(e === 'keepAlive')
             {
@@ -68,12 +70,12 @@ export default class EventSource extends EventTarget
     {
         this.emit('done');
 
-        this.controller.abort();
+        this.#controller.abort();
     }
 
-    private async *read(request: Promise<Response>): AsyncIterable<string>
+    async *#read(request: Promise<Response>): AsyncIterable<string>
     {
-        const response = (await request) as Response;
+        const response = await request;
 
         if(response.body === null)
         {
@@ -111,7 +113,7 @@ export default class EventSource extends EventTarget
         }
     }
 
-    private static async *parse(iterator: AsyncIterable<string>): AsyncIterable<Message>
+    static async *#parse(iterator: AsyncIterable<string>): AsyncIterable<Message>
     {
         for await (const chunk of iterator)
         {
@@ -132,7 +134,7 @@ export default class EventSource extends EventTarget
 
                     case 'data':
                     {
-                        message.data = JSON.tryParse(value);
+                        message.data = tryParse(value) ?? value;
 
                         break;
                     }

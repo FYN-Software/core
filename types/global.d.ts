@@ -1,36 +1,3 @@
-interface Array<T>
-{
-    compare(arr2: Array<T>): boolean;
-    unique(): Array<T>;
-    shuffle(): Array<T>;
-    chunk(size: number): Array<Array<T>>;
-    chunk(size: number): Array<Array<T>>;
-    filterAsync(predicate: (toTest: T) => Promise<boolean>): Promise<Array<T>>;
-    findAsync(predicate: (toTest: T) => Promise<boolean>): Promise<T|undefined>;
-    first: T|undefined;
-    last: T|undefined;
-    sum: number;
-    indexOfMinValue: number;
-    indexOfMaxValue: number;
-}
-
-interface ArrayConstructor
-{
-    compare<T>(arr1: Array<T>, arr2: Array<T>): boolean;
-    fromAsync<TIn, TOut = TIn>(iterable: AsyncIterable<TIn>|Iterable<TIn>, map?: (i: TIn) => Promise<TOut>): Promise<Array<TOut>>;
-}
-
-interface Node
-{
-    childOf(parent: Node): boolean;
-    remove(): void;
-}
-
-interface NodeList
-{
-    clear(): NodeList;
-}
-
 // TODO(Chris Kruining) Remove these hacked polyfills when the CSS-OM finally releases
 interface CSSStyleValue
 {
@@ -44,36 +11,27 @@ interface StylePropertyMapReadOnly extends Omit<Map<string, CSSStyleValue>, 'set
 }
 // TODO(Chris Kruining) ==============================================================
 
+interface Function
+{
+    __observerLimit__?: Function;
+}
+
+interface Document
+{
+    getElementById<T extends Element>(id: string): T;
+}
+
 interface Element
 {
-    readonly index: number;
-
     addEventListener<K extends keyof ElementEventMap>(type: K, listener: (this: Element, ev: ElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions, useCapture?: boolean): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, useCapture?: boolean): void;
 
     computedStyleMap(): StylePropertyMapReadOnly;
-
-    readonly pathToRoot: Array<HTMLElement>
 }
 
 interface HTMLElement
 {
     attachInternals(): ElementInternals;
-}
-
-interface HTMLTemplateElement
-{
-    innerHTML: string;
-}
-
-interface DocumentFragment
-{
-    innerHTML: string;
-}
-interface DocumentFragmentConstructor
-{
-    fromString(html: string): DocumentFragment;
-    fromElement(html: string): DocumentFragment;
 }
 
 interface DocumentOrShadowRoot
@@ -86,46 +44,10 @@ interface CSSStyleSheet
     replace(text: string): Promise<void>;
 }
 
-interface NamedNodeMap
-{
-    toggle(name: string): void;
-    setOnAssert(condition: boolean, name: string, value?: any): NamedNodeMap;
-}
-
-interface Math
-{
-    mod(value: number, radix: number): number;
-    clamp(lowerBound: number, upperBound: number, value: number): number;
-}
-
-interface Number
-{
-    mod(radix: number): number;
-    map(lowerBoundIn: number, upperBoundIn: number, lowerBoundOut: number, upperBoundOut: number): number;
-    clamp(lowerBound: number, upperBound: number): number;
-}
-
 declare interface String
 {
-    toDashCase(): string;
-    toSnakeCase(): string;
-    toCamelCase(): string;
-    toPascalCase(): string;
-    capitalize(): string;
-    toAsyncIterable(): AsyncGenerator<string, void, void>;
     replaceAll(regex: RegExp, callback: (...matches: Array<string>) => string): string
     replaceAll(regex: RegExp, replacement: string): string
-    replaceAllAsync(regex: RegExp, callback: (...matches: Array<string>) => string|Promise<string>): Promise<string>
-}
-
-interface Promise<T>
-{
-    delay(milliseconds: number): Promise<T>;
-    stage(callback: (data: T) => any): Promise<T>;
-}
-interface PromiseConstructor
-{
-    delay(milliseconds: number): Promise<void>;
 }
 
 type Options = Partial<{
@@ -157,49 +79,66 @@ type EventDefinition = {
     [key: string]: any;
 }
 
+type EventsType<T> = T extends Target<infer TEvents> ? TEvents : never;
 interface Target<TEvents extends EventDefinition = {}> extends HTMLElement
 {
-    readonly events: TEvents;
 }
 
-interface CustomTarget<T extends CustomTarget<T, T['events']>, TEvents extends EventDefinition = {}> extends EventTarget
+type CustomEventsType<T extends CustomTarget<T>> = T extends CustomTarget<any, infer TEvents> ? TEvents : never;
+interface CustomTarget<T extends CustomTarget<T, TEvents>, TEvents extends EventDefinition = {}> extends EventTarget
 {
-    readonly events: TEvents;
+    // on(
+    //     selector: string|EventListenerConfig<T, TEvents>,
+    //     settings?: EventListenerConfig<T, TEvents>
+    // ): CustomTarget<T>;
+    // emit<K extends (keyof TEvents)&string>(event: K, detail?: TEvents[K], init?: Partial<EventInit>): CustomEvent<TEvents[K]>;
+    // await<K extends (keyof TEvents)&string>(event: K): Promise<TEvents[K]>;
+    //
+    // on<Q extends Target>(
+    //     selector: string|EventListenerConfig<Q, Q['events']>,
+    //     settings?: EventListenerConfig<Q, Q['events']>
+    // ): EventTarget;
+    //
+    // on<Q extends HTMLElement>(
+    //     selector: string|EventListenerConfig<Q, {}>,
+    //     settings?: EventListenerConfig<Q, {}>
+    // ): EventTarget;
+    //
+    // emit<TDetail = void>(event: string, detail?: TDetail, init?: Partial<EventInit>): CustomEvent<TDetail>;
+    // await<TDetail = void>(event: string): Promise<TDetail>;
 }
 
 interface EventTarget
 {
+    readonly parents?: Set<WeakRef<EventTarget>>;
+
     on(
         selector: string|EventListenerConfig<HTMLElement, {}>,
         settings?: EventListenerConfig<HTMLElement, {}>
     ): EventTarget;
 
     on<T extends Target>(
-        selector: string|EventListenerConfig<T, T['events']>,
-        settings?: EventListenerConfig<T, T['events']>
+        selector: string|EventListenerConfig<T, EventsType<T>>,
+        settings?: EventListenerConfig<T, EventsType<T>>
     ): EventTarget;
 
     on<T extends CustomTarget<T>>(
-        selector: string|EventListenerConfig<T, T['events']>,
-        settings?: EventListenerConfig<T, T['events']>
+        selector: string|EventListenerConfig<T, CustomEventsType<T>>,
+        settings?: EventListenerConfig<T, CustomEventsType<T>>
+    ): CustomTarget<T>;
+
+    on<T extends HTMLElement>(
+        selector: string|EventListenerConfig<T, {}>,
+        settings?: EventListenerConfig<T, {}>
     ): EventTarget;
 
     trigger(event: string): EventTarget;
-    emit<TDetail = any>(event: string, detail?: TDetail, composed?: boolean): CustomEvent<TDetail>;
-    await<TDetail = any>(event: string): Promise<TDetail>;
-}
-
-interface JSON
-{
-    tryParse(str: string, ret?: boolean): any|string;
-}
-
-interface DOMRect
-{
-    contains(x: number, y: number): boolean;
+    emit<TDetail = void>(event: string, detail?: TDetail, init?: Partial<EventInit>): CustomEvent<TDetail>;
+    await<TDetail = void>(event: string): Promise<TDetail>;
 }
 
 type Constructor<T extends object = object> = new (...args: any[]) => T;
+type PrototypeOf<T extends Constructor<any>> = T extends Constructor<infer U> ? U : never;
 
 declare type FormValue = string|File|FormData;
 
@@ -276,3 +215,25 @@ declare type FontDeclaration = {
         [key: string]: string,
     };
 };
+
+declare type ObservableOptions = {
+    parent?: WeakRef<EventTarget>;
+};
+
+type ObservableEvents<T> = {
+    changed: {
+        old: T[keyof T]|T|undefined;
+        new: T[keyof T]|T;
+        property?: string;
+        path?: Array<string>;
+        target: IObservable<T>;
+    };
+};
+
+declare interface IObservable<T> extends CustomTarget<IObservable<T>, ObservableEvents<T>>
+{
+    readonly options: ObservableOptions;
+
+    get(): T;
+    set(value: T): void;
+}

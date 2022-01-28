@@ -1,73 +1,35 @@
-export default class Animation {
-    static linear(t) {
-        return t;
-    }
-    static inQuad(t) {
-        return Animation.in(t, 2);
-    }
-    static outQuad(t) {
-        return Animation.out(t, 2);
-    }
-    static inOutQuad(t) {
-        return Animation.inOut(t, 2);
-    }
-    static inCubic(t) {
-        return Animation.in(t, 3);
-    }
-    static outCubic(t) {
-        return Animation.out(t, 3);
-    }
-    static inOutCubic(t) {
-        return Animation.inOut(t, 3);
-    }
-    static inQuart(t) {
-        return Animation.in(t, 4);
-    }
-    static outQuart(t) {
-        return Animation.out(t, 4);
-    }
-    static inOutQuart(t) {
-        return Animation.inOut(t, 4);
-    }
-    static inQuint(t) {
-        return Animation.in(t, 5);
-    }
-    static outQuint(t) {
-        return Animation.out(t, 5);
-    }
-    static inOutQuint(t) {
-        return Animation.inOut(t, 5);
-    }
-    static in(t, d = 2) {
-        return t ** d;
-    }
-    static out(t, d = 2) {
-        return 1 - t ** d;
-    }
-    static inOut(t, d = 2) {
-        return t ** d / (t ** d + (1 - t) ** d);
-    }
-    static ease(callback, options = {}) {
-        const { duration = 300, easing = Animation.inOutCubic } = options;
-        if (typeof easing !== 'function' && Animation.hasOwnProperty(easing) === false) {
-            throw new Error(`'${easing}' is not a valid method of 'Easing'`);
+export const linear = (t) => t;
+export const easeInQuad = (t) => inExponent(t, 2);
+export const easeOutQuad = (t) => outExponent(t, 2);
+export const easeInOutQuad = (t) => inOutExponent(t, 2);
+export const easeInCubic = (t) => inExponent(t, 3);
+export const easeOutCubic = (t) => outExponent(t, 3);
+export const easeInOutCubic = (t) => inOutExponent(t, 3);
+export const easeInQuart = (t) => inExponent(t, 4);
+export const easeOutQuart = (t) => outExponent(t, 4);
+export const easeInOutQuart = (t) => inOutExponent(t, 4);
+export const easeInQuint = (t) => inExponent(t, 5);
+export const easeOutQuint = (t) => outExponent(t, 5);
+export const easeInOutQuint = (t) => inOutExponent(t, 5);
+export const easeIn = (t, d = 2) => t ** d;
+export const easeOut = (t, d = 2) => 1 - t ** d;
+export const easeInOut = (t, d = 2) => t ** d / (t ** d + (1 - t) ** d);
+export function ease(callback, options = {}) {
+    const { duration = 300, easing = inOutCubic } = options;
+    let start;
+    let elapsed;
+    let animation = (time = 0) => {
+        if (!start) {
+            start = time;
         }
-        let start;
-        let elapsed;
-        let animation = (time = 0) => {
-            if (!start) {
-                start = time;
-            }
-            elapsed = duration === 1
-                ? duration
-                : time - start;
-            callback(easing(elapsed / duration));
-            if (elapsed < duration) {
-                requestAnimationFrame(time => animation(time));
-            }
-        };
-        animation();
-    }
+        elapsed = duration === 1
+            ? duration
+            : time - start;
+        callback(easing(elapsed / duration));
+        if (elapsed < duration) {
+            requestAnimationFrame(time => animation(time));
+        }
+    };
+    animation();
 }
-export const ease = Animation.ease;
 //# sourceMappingURL=animation.js.map

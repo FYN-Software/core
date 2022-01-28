@@ -27,13 +27,7 @@ declare type DragOnConfig = {
         path: Array<EventTarget>;
     }) => any;
 };
-export default class Drag {
-    private static _marker;
-    private static _dragged;
-    private static _allowedToEffect;
-    private static _getReference;
-    static draggable(target: Node, scope: string, config: DragDraggableConfig): void;
-    static on(target: Node, scope: string, config: DragOnConfig): void;
-}
+export declare function draggable(target: Node, scope: string, config: DragDraggableConfig): void;
+export declare function on(target: Node, scope: string, config: DragOnConfig): void;
 export {};
 //# sourceMappingURL=drag.d.ts.map

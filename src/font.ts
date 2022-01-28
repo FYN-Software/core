@@ -31,22 +31,19 @@ async function load(font: FontDeclaration, selector?: string, variants: Array<st
     });
 }
 
-export default class Font
+export async function fetchFromNetwork(font: FontDeclaration, selector?: string, variants: Array<string> = [])
 {
-    static async fetch(font: FontDeclaration, selector?: string, variants: Array<string> = [])
-    {
-        return load(font, selector, variants, false);
-    }
+    return load(font, selector, variants, false);
+}
 
-    static async preview(font: FontDeclaration, selector?: string, variants: Array<string> = [])
-    {
-        return load(font, selector, variants, true);
-    }
+export async function preview(font: FontDeclaration, selector?: string, variants: Array<string> = [])
+{
+    return load(font, selector, variants, true);
+}
 
-    static async list(key: string): Promise<object>
-    {
-        const url = `https://www.googleapis.com/webfonts/v1/webfonts?sort=popularity&key=${key}`;
+export async function list(key: string): Promise<object>
+{
+    const url = `https://www.googleapis.com/webfonts/v1/webfonts?sort=popularity&key=${key}`;
 
-        return (await fetch(url, { headers: { 'content-type': 'application/json' } })).json();
-    }
+    return (await fetch(url, { headers: { 'content-type': 'application/json' } })).json();
 }

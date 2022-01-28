@@ -1,28 +1,29 @@
+import { tryParse } from '../function/json.js';
 export default class EventSource extends EventTarget {
-    static init = {
+    static #init = {
         credentials: 'omit',
         mode: 'cors',
         headers: {
             'Accept': 'text/event-stream',
         },
     };
-    controller = new AbortController();
-    request;
+    #controller = new AbortController();
+    #request;
     #lastId = -1;
     constructor(url, init = {}) {
         super();
-        this.request = fetch(url, {
-            ...EventSource.init,
+        this.#request = fetch(url, {
+            ...EventSource.#init,
             ...init,
-            signal: this.controller.signal,
+            signal: this.#controller.signal,
             headers: {
-                ...EventSource.init.headers,
+                ...EventSource.#init.headers,
                 ...(init?.headers ?? {})
             }
         });
     }
     async *listenFor(event = 'message') {
-        for await (const { id = null, event: e, data } of EventSource.parse(this.read(this.request))) {
+        for await (const { id = null, event: e, data } of EventSource.#parse(this.#read(this.#request))) {
             if (e === 'keepAlive') {
                 continue;
             }
@@ -42,10 +43,10 @@ export default class EventSource extends EventTarget {
     }
     async close() {
         this.emit('done');
-        this.controller.abort();
+        this.#controller.abort();
     }
-    async *read(request) {
-        const response = (await request);
+    async *#read(request) {
+        const response = await request;
         if (response.body === null) {
             return;
         }
@@ -68,7 +69,7 @@ export default class EventSource extends EventTarget {
             await this.close();
         }
     }
-    static async *parse(iterator) {
+    static async *#parse(iterator) {
         for await (const chunk of iterator) {
             const message = {};
             for (const line of chunk.split('\n')) {
@@ -81,7 +82,7 @@ export default class EventSource extends EventTarget {
                         }
                     case 'data':
                         {
-                            message.data = JSON.tryParse(value);
+                            message.data = tryParse(value) ?? value;
                             break;
                         }
                     case 'event':

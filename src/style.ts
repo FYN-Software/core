@@ -1,54 +1,51 @@
-export default abstract class Style
+const map: Map<string, CSSStyleSheet> = new Map();
+const urls: Map<string, string> = new Map();
+const defined: Map<string, [ string, object ]> = new Map();
+
+export function get(...keys: string[]): CSSStyleSheet[]
 {
-    private static map : Map<string, CSSStyleSheet> = new Map();
-    private static urls : Map<string, string> = new Map();
-    private static defined : Map<string, [ string, object ]> = new Map();
+    return keys.map(key => {
+        if(map.has(key) === false)
+        {
+            map.set(key, new CSSStyleSheet());
 
-    public static get(...keys: string[]): CSSStyleSheet[]
-    {
-        return keys.map(key => {
-            if(this.map.has(key) === false)
+            if(defined.has(key))
             {
-                this.map.set(key, new CSSStyleSheet());
-
-                if(this.defined.has(key))
-                {
-                    void this.set(key, ...this.defined.get(key)!);
-                }
+                void set(key, ...defined.get(key)!);
             }
-
-            return this.map.get(key)!;
-        });
-    }
-
-    public static async set(key: string, url: string, options = {}): Promise<void>
-    {
-        if(this.urls.get(key) === url)
-        {
-            return;
         }
 
-        this.urls.set(key, url);
+        return map.get(key)!;
+    });
+}
 
-        const [ sheet ] = this.get(key);
-        const css = await fetch(`${url}?fyn.core.style`, options).then(r => r.text());
-
-        await sheet.replace(css);
-    }
-
-    public static define(key: string, url: string, options = {}): void
+export async function set(key: string, url: string, options = {}): Promise<void>
+{
+    if(urls.get(key) === url)
     {
-        this.defined.set(key, [ url, options ]);
+        return;
     }
 
-    public static async fromString(key: string, content: string): Promise<void>
+    urls.set(key, url);
+
+    const [ sheet ] = get(key);
+    const css = await fetch(`${url}?fyn.core.style`, options).then(r => r.text());
+
+    await sheet.replace(css);
+}
+
+export function define(key: string, url: string, options = {}): void
+{
+    defined.set(key, [ url, options ]);
+}
+
+export async function fromString(key: string, content: string): Promise<void>
+{
+    if(map.has(key) === false)
     {
-        if(this.map.has(key) === false)
-        {
-            // this.map.set(key, new CSSStyleSheet({ crossOrigin: 'anonymous' }));
-            this.map.set(key, new CSSStyleSheet());
-        }
-
-        return this.map.get(key)!.replace(content);
+        // this.map.set(key, new CSSStyleSheet({ crossOrigin: 'anonymous' }));
+        map.set(key, new CSSStyleSheet());
     }
+
+    return map.get(key)!.replace(content);
 }
